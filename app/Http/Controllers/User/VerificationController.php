@@ -1,0 +1,48 @@
+<?php
+
+/*
+ |--------------------------------------------------------------------------
+ | GoBiz vCard SaaS
+ |--------------------------------------------------------------------------
+ | Developed by NativeCode © 2021 - https://nativecode.in
+ | All rights reserved
+ | Unauthorized distribution is prohibited
+ |--------------------------------------------------------------------------
+*/
+
+namespace App\Http\Controllers\User;
+
+use App\User;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+
+class VerificationController extends Controller
+{
+    // Verified email
+    public function verifyEmailVerification()
+    {
+        // Update
+        User::where('id', auth()->user()->id)->update([
+            'email_verified_at' => now(),
+        ]);
+
+        // Page redirect
+        return redirect()->route('user.dashboard');
+    }
+
+    // Resend Email Verification
+    public function resendEmailVerification()
+    {
+        // Queries
+        $user = User::where('id', Auth::user()->id)->where('status', 1)->first();
+        // Send Email
+        try {
+            $user->newEmail($user->email);
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('failed', trans('Email service not available.'));
+        }
+
+        // Page redirect
+        return redirect()->back()->with('success', trans('Mail Sent.'));
+    }
+}
