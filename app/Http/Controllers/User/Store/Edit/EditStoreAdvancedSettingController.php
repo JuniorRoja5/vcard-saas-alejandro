@@ -62,7 +62,7 @@ class EditStoreAdvancedSettingController extends Controller
     }
 
     public function updateStoreAdvancedSetting(Request $request)
-    {
+    { 
         // Queries
         $business_card = BusinessCard::where('card_id', $request->store_id)->first();
 
@@ -70,7 +70,15 @@ class EditStoreAdvancedSettingController extends Controller
         if ($business_card == null) {
             return redirect()->route('user.stores')->with('failed', trans('Store not found!'));
         } else {
+            // Check pwa enable/disable
+            if ($request->is_enable_pwa == "on") {
+                $request->is_enable_pwa = 1;
+            } else {
+                $request->is_enable_pwa = 0;
+            }
+
             // Update store advanced setting
+            $business_card->is_enable_pwa = $request->is_enable_pwa;
             $business_card->custom_css = $request->custom_css;
             $business_card->custom_js = $request->custom_js;
             $business_card->save();

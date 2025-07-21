@@ -28,18 +28,28 @@ class BookAppointmentController extends Controller
     // Book appointment
     public function bookAppointment(Request $request)
     {
-        // Validate Recaptcha
-        if (env('RECAPTCHA_ENABLE') == 'on') {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'required|string|max:20',
-                'date' => 'required|date',
-                'time_slot' => 'required|string', 
-                'price' => 'required',
-                'g_recaptcha_response' => 'required',
-            ]);
+        // Validate base fields
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'date' => 'required|date',
+            'time_slot' => 'required|string',
+        ];
 
+        // Add Recaptcha validation if enabled
+        if (env('RECAPTCHA_ENABLE') == 'on') {
+            $rules['g_recaptcha_response'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => trans('Please fill out all the fields.')], 422);
+        }
+
+        // Verify Recaptcha if enabled
+        if (env('RECAPTCHA_ENABLE') == 'on') {
             $recaptcha = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                 'secret' => env('RECAPTCHA_SECRET_KEY'),
                 'response' => $request->input('g_recaptcha_response'),
@@ -47,168 +57,84 @@ class BookAppointmentController extends Controller
             ]);
 
             $result = $recaptcha->json();
-
             if (!($result['success'] ?? false)) {
-                return response()->json(['success' => false, 'message' => trans('Some fields are missing or reCAPTCHA verification failed.')], 422);
+                return response()->json(['success' => false, 'message' => trans('reCAPTCHA verification failed.')], 422);
             }
-
-            // Save the appointment
-            $bookAppointment = new BookedAppointment();
-            $bookAppointment->booked_appointment_id = uniqid();
-            $bookAppointment->card_id = $request->card;
-            $bookAppointment->name = $request->name;
-            $bookAppointment->email = $request->email;
-            $bookAppointment->phone = $request->phone;
-            $bookAppointment->notes = $request->notes;
-            $bookAppointment->booking_date = $request->date;
-            $bookAppointment->booking_time = $request->time_slot;
-            $bookAppointment->total_price = $request->price;
-            $bookAppointment->save();
-
-            // Get vcard owner email
-            $vcardOwner = BusinessCard::where('card_id', $request->card)->first();
-            $businessName = $vcardOwner->title;
-            $businessVcardUrl = url($vcardOwner->card_url);
-
-            // Check enquiry email is empty
-            if ($vcardOwner == null) {
-                $vcardOwnerEmail = "";
-            } else {
-                $vcardOwnerEmail = $vcardOwner->appointment_receive_email;
-            }
-
-            // Get appointment pending email template content
-            $emailTemplateDetails = EmailTemplate::where('email_template_id', '584922675196')->first();
-
-            // Booking mail sent to customer
-            if ($emailTemplateDetails->is_enabled == 1) {
-                $details = [
-                    'status' => "Pending",
-                    'emailSubject' => $emailTemplateDetails->email_template_subject,
-                    'emailContent' => $emailTemplateDetails->email_template_content,
-                    'appointmentDate' => $request->date,
-                    'appointmentTime' => $request->time_slot,
-                    'vcardName' => $businessName,
-                    'vcardUrl' => $businessVcardUrl,
-                    'googleCalendarUrl' => "",
-                    'customerName' => "",
-                    'cardId' => $request->card
-                ];
-            }
-
-            $vcardOwnerMailTemplateDetails = EmailTemplate::where('email_template_id', '584922675201')->first();
-
-            // Booking mail sent to vcard owner
-            $ownerdDetails = [
-                'status' => "",
-                'emailSubject' => $vcardOwnerMailTemplateDetails->email_template_subject,
-                'emailContent' => $vcardOwnerMailTemplateDetails->email_template_content,
-                'appointmentDate' => $request->date,
-                'appointmentTime' => $request->time_slot,
-                'vcardName' => $businessName,
-                'vcardUrl' => $businessVcardUrl,
-                'googleCalendarUrl' => "",
-                'customerName' => $request->name,
-                'cardId' => $request->card
-            ];
-
-            try {
-                Mail::to($request->email)->send(new \App\Mail\AppointmentMail($details));
-                Mail::to($vcardOwnerEmail)->send(new \App\Mail\AppointmentMail($ownerdDetails));
-                // Mail::to($vcardOwnerEmail)->send(new \App\Mail\VcardOwnerAppointmentMail($ownerdDetails));
-
-                return response()->json(['success' => true, 'message' => trans('Appointment booked successfully!')]);
-            } catch (\Exception $e) {
-            }
-
-            return response()->json(['success' => false, 'message' => trans('Please fill out all the fields.')]);
-        } else {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'required|string|max:20',
-                'date' => 'required|date',
-                'time_slot' => 'required|string',
-                'price' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['success' => false, 'message' => trans('Please fill out all the fields.')]);
-            }
-
-            // Save the appointment
-            $bookAppointment = new BookedAppointment();
-            $bookAppointment->booked_appointment_id = uniqid();
-            $bookAppointment->card_id = $request->card;
-            $bookAppointment->name = $request->name;
-            $bookAppointment->email = $request->email;
-            $bookAppointment->phone = $request->phone;
-            $bookAppointment->notes = $request->notes;
-            $bookAppointment->booking_date = $request->date;
-            $bookAppointment->booking_time = $request->time_slot;
-            $bookAppointment->total_price = $request->price;
-            $bookAppointment->save();
-
-            // Get vcard owner email
-            $vcardOwner = BusinessCard::where('card_id', $request->card)->first();
-            $businessName = $vcardOwner->title;
-            $businessVcardUrl = url($vcardOwner->card_url);
-
-            // Check enquiry email is empty
-            if ($vcardOwner == null) {
-                $vcardOwnerEmail = "";
-            } else {
-                $vcardOwnerEmail = $vcardOwner->appointment_receive_email;
-            }
-
-            // Get appointment pending email template content
-            $emailTemplateDetails = EmailTemplate::where('email_template_id', '584922675196')->first();
-
-            // Booking mail sent to customer
-            if ($emailTemplateDetails->is_enabled == 1) {
-                $details = [
-                    'status' => "Pending",
-                    'emailSubject' => $emailTemplateDetails->email_template_subject,
-                    'emailContent' => $emailTemplateDetails->email_template_content,
-                    'appointmentDate' => $request->date,
-                    'appointmentTime' => $request->time_slot,
-                    'vcardName' => $businessName,
-                    'vcardUrl' => $businessVcardUrl,
-                    'googleCalendarUrl' => "",
-                    'customerName' => "",
-                    'cardId' => $request->card
-                ];
-            }
-
-            $vcardOwnerMailTemplateDetails = EmailTemplate::where('email_template_id', '584922675201')->first();
-
-            // Booking mail sent to vcard owner
-            $ownerdDetails = [
-                'status' => "",
-                'emailSubject' => $vcardOwnerMailTemplateDetails->email_template_subject,
-                'emailContent' => $vcardOwnerMailTemplateDetails->email_template_content,
-                'appointmentDate' => $request->date,
-                'appointmentTime' => $request->time_slot,
-                'vcardName' => $businessName,
-                'vcardUrl' => $businessVcardUrl,
-                'googleCalendarUrl' => "",
-                'customerName' => $request->name,
-                'cardId' => $request->card
-            ];
-
-            try {
-                Mail::to($request->email)->send(new \App\Mail\AppointmentMail($details));
-                Mail::to($vcardOwnerEmail)->send(new \App\Mail\AppointmentMail($ownerdDetails));
-                // Mail::to($vcardOwnerEmail)->send(new \App\Mail\VcardOwnerAppointmentMail($ownerdDetails));
-
-                return response()->json(['success' => true, 'message' => trans('Appointment booked successfully!')]);
-            } catch (\Exception $e) {
-            }
-
-            return response()->json(['success' => false, 'message' => trans('Please fill out all the fields.')]);
         }
 
-        return response()->json(['success' => false, 'message' => trans('Some fields are missing or reCAPTCHA verification failed.')]);
+        // Check if appointment already booked
+        $parsedDate = Carbon::parse($request->date)->format('Y-m-d');
+
+        $alreadyBooked = BookedAppointment::whereDate('booking_date', $parsedDate)
+            ->where('booking_time', $request->time_slot)
+            ->where('status', 1)
+            ->exists();
+
+        if ($alreadyBooked) {
+            return response()->json(['success' => false, 'message' => trans('Booking date and time is already booked')], 422);
+        }
+
+        // Save appointment
+        $bookAppointment = new BookedAppointment();
+        $bookAppointment->booked_appointment_id = uniqid();
+        $bookAppointment->card_id = $request->card;
+        $bookAppointment->name = $request->name;
+        $bookAppointment->email = $request->email;
+        $bookAppointment->phone = $request->phone;
+        $bookAppointment->notes = $request->notes;
+        $bookAppointment->booking_date = $parsedDate;
+        $bookAppointment->booking_time = $request->time_slot;
+        $bookAppointment->total_price = $request->price ?? 0;
+        $bookAppointment->save();
+
+        // Get vCard details
+        $vcardOwner = BusinessCard::where('card_id', $request->card)->first();
+        $businessName = $vcardOwner->title ?? '';
+        $businessVcardUrl = url($vcardOwner->card_url ?? '');
+        $vcardOwnerEmail = $vcardOwner->appointment_receive_email ?? '';
+
+        // Send confirmation emails
+        try {
+            $customerTemplate = EmailTemplate::where('email_template_id', '584922675196')->first();
+            $ownerTemplate = EmailTemplate::where('email_template_id', '584922675201')->first();
+
+            if ($customerTemplate?->is_enabled) {
+                $details = [
+                    'status' => "Pending",
+                    'emailSubject' => $customerTemplate->email_template_subject,
+                    'emailContent' => $customerTemplate->email_template_content,
+                    'appointmentDate' => $parsedDate,
+                    'appointmentTime' => $request->time_slot,
+                    'vcardName' => $businessName,
+                    'vcardUrl' => $businessVcardUrl,
+                    'googleCalendarUrl' => "",
+                    'customerName' => "",
+                    'cardId' => $request->card,
+                ];
+                Mail::to($request->email)->send(new \App\Mail\AppointmentMail($details));
+            }
+
+            if ($ownerTemplate) {
+                $ownerDetails = [
+                    'status' => "",
+                    'emailSubject' => $ownerTemplate->email_template_subject,
+                    'emailContent' => $ownerTemplate->email_template_content,
+                    'appointmentDate' => $parsedDate,
+                    'appointmentTime' => $request->time_slot,
+                    'vcardName' => $businessName,
+                    'vcardUrl' => $businessVcardUrl,
+                    'googleCalendarUrl' => "",
+                    'customerName' => $request->name,
+                    'cardId' => $request->card,
+                ];
+                Mail::to($vcardOwnerEmail)->send(new \App\Mail\AppointmentMail($ownerDetails));
+            }
+
+            return response()->json(['success' => true, 'message' => trans('Appointment booked successfully!')]);
+        } catch (\Exception $e) {
+            // Optionally log error
+            return response()->json(['success' => false, 'message' => trans('Failed to send confirmation email.')]);
+        }
     }
 
     // Get day wise available time slots

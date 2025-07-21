@@ -247,18 +247,25 @@
                                     <div class="col-md-auto">
                                         <div class="divide-y divide-y-fill">
                                             <div></div>
-                                            <div class="px-3">
-                                                <div>
-                                                    <span class="status-dot bg-orange"></span> {{ __('vCards') }}
+                                            {{-- vCards --}}
+                                            @if ($active_plan->plan_type === 'VCARD' || $active_plan->plan_type === 'BOTH')
+                                                <div class="px-3">
+                                                    <div>
+                                                        <span class="status-dot bg-orange"></span> {{ __('vCards') }}
+                                                    </div>
+                                                    <div class="h2">{{ $totalvCards }}</div>
                                                 </div>
-                                                <div class="h2">{{ $totalvCards }}</div>
-                                            </div>
-                                            <div class="px-3">
-                                                <div>
-                                                    <span class="status-dot bg-green"></span> {{ __('Stores') }}
+                                            @endif
+
+                                            {{-- Stores --}}
+                                            @if ($active_plan->plan_type === 'STORE' || $active_plan->plan_type === 'BOTH')
+                                                <div class="px-3">
+                                                    <div>
+                                                        <span class="status-dot bg-green"></span> {{ __('Stores') }}
+                                                    </div>
+                                                    <div class="h2">{{ $totalStores }}</div>
                                                 </div>
-                                                <div class="h2">{{ $totalStores }}</div>
-                                            </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -398,13 +405,21 @@
                     lineCap: "round",
                     curve: "smooth",
                 },
-                series: [{
-                    name: `{{ __('vCards') }}`,
-                    data: [{{ $vcards }}]
-                }, {
-                    name: `{{ __('Stores') }}`,
-                    data: [{{ $stores }}]
-                }],
+                series: [
+                    @if ($active_plan->plan_type === 'VCARD' || $active_plan->plan_type === 'BOTH')
+                        {
+                            name: `{{ __('vCards') }}`,
+                            data: [{{ $vcards }}]
+                        }@if ($active_plan->plan_type === 'STORE' || $active_plan->plan_type === 'BOTH'),@endif
+                    @endif
+
+                    @if ($active_plan->plan_type === 'STORE' || $active_plan->plan_type === 'BOTH')
+                        {
+                            name: `{{ __('Stores') }}`,
+                            data: [{{ $stores }}]
+                        }
+                    @endif
+                ],
                 tooltip: {
                     theme: 'dark'
                 },
@@ -521,13 +536,21 @@
                     lineCap: "round",
                     curve: "smooth",
                 },
-                series: [{
-                    name: "{{ __('vCard') }}",
-                    data: {!! json_encode($weekData['vcard']) !!}
-                }, {
-                    name: "{{ __('Store') }}",
-                    data: {!! json_encode($weekData['store']) !!}
-                }],
+                series: [
+                    @if ($active_plan->plan_type === 'VCARD' || $active_plan->plan_type === 'BOTH')
+                        {
+                            name: `{{ __('vCards') }}`,
+                            data: {!! json_encode($weekData['vcard']) !!}
+                        }@if ($active_plan->plan_type === 'STORE' || $active_plan->plan_type === 'BOTH'),@endif
+                    @endif
+
+                    @if ($active_plan->plan_type === 'STORE' || $active_plan->plan_type === 'BOTH')
+                        {
+                            name: `{{ __('Stores') }}`,
+                            data: {!! json_encode($weekData['store']) !!}
+                        }
+                    @endif
+                ],
                 tooltip: {
                     theme: 'dark'
                 },

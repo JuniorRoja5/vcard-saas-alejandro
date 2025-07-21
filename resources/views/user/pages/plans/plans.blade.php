@@ -289,17 +289,45 @@
                                                 <strong>{{ __('Free Support') }}</strong></li>
                                         </ul>
                                         <div class="text-center mt-4">
-                                            @if ($free_plan == 0 || $plan->plan_price != '0' && Auth::user()->trial != 0)
-                                                <a class="open-plan-model btn btn-outline-primary w-100"
-                                                    data-id="{{ $plan->plan_id }}"
-                                                    href="#openPlanModel">{{ __('Choose plan') }}</a>
-                                            @elseif (Auth::user()->trial == 0 && $plan->trial != 0 && $plan->plan_price != 0)
+                                            @php
+                                                $user = Auth::user();
+                                                $isPaidPlan = $plan->plan_price != 0;
+                                                $onTrial = $user->trial != 0;
+                                                $userHasPlan = $user->plan_id == $plan->plan_id;
+                                                $eligibleForTrial = $user->trial == 0 && $plan->trial != 0 && $plan->plan_price != 0;
+                                            @endphp
+
+                                            @if ($userHasPlan && $isPaidPlan)
+                                                <a class="btn btn-dark w-100" 
+                                                href="{{ route('user.checkout', $plan->plan_id) }}">
+                                                {{ __('Current Plan') }}
+                                                </a>
+
+                                            @elseif ($eligibleForTrial)
                                                 <a class="btn btn-outline-dark w-100" 
-                                                    href="{{ route('user.checkout', $plan->plan_id) }}">{{ __('Start') }} {{ $plan->trial }} {{ __('Days Trial') }}</a>
+                                                href="{{ route('user.checkout', $plan->plan_id) }}">
+                                                {{ __('Start') }} {{ $plan->trial }} {{ __('Days Trial') }}
+                                                </a>
+
+                                            @elseif ($isPaidPlan && $onTrial)
+                                                <a class="open-plan-model btn btn-primary w-100"
+                                                data-id="{{ $plan->plan_id }}"
+                                                href="#openPlanModel">{{ __('Choose plan') }}</a>
+                                                
+                                            @elseif ($free_plan == 0 && $plan->plan_price == 0)
+                                                <a class="open-plan-model btn btn-primary w-100"
+                                                data-id="{{ $plan->plan_id }}"
+                                                href="#openPlanModel">{{ __('Choose plan') }}</a>
+                                                
+                                            @elseif ($isPaidPlan)
+                                                <a class="open-plan-model btn btn-primary w-100"
+                                                data-id="{{ $plan->plan_id }}"
+                                                href="#openPlanModel">{{ __('Choose plan') }}</a>
+
                                             @else
-                                                <a class="down-plan-model btn btn-outline-primary w-100"
-                                                    data-id="{{ $plan->plan_id }}"
-                                                    href="#downPlanModel">{{ __('Choose plan') }}</a>
+                                                <a class="down-plan-model btn btn-primary w-100"
+                                                data-id="{{ $plan->plan_id }}"
+                                                href="#downPlanModel">{{ __('Choose plan') }}</a>
                                             @endif
                                         </div>
                                     </div>

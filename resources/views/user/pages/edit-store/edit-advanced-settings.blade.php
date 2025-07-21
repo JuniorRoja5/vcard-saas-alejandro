@@ -76,6 +76,23 @@
                                 
                                     <div class="card-body">
                                         <input type="hidden" class="form-control" name="store_id" value="{{ $business_card->card_id }}">
+                                        
+                                        <div class="row mb-3">
+                                            @if ($plan_details->advanced_settings == 1)
+                                                {{-- Enable/Disable PWA --}}
+                                                <div class="col-md-3 col-xl-3">
+                                                    <div class="mb-2">
+                                                        <div class="form-label">{{ __('Enable PWA') }}
+                                                        </div>
+                                                        <label class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" {{ $business_card->is_enable_pwa == 1 ? 'checked' : '' }}
+                                                                name="is_enable_pwa">
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-md-6 col-xl-6">
                                                 <div class="mb-3">

@@ -43,6 +43,7 @@ class CreateBusinessCardsTable extends Migration
             $table->text('appointment_receive_email')->nullable();
             $table->boolean('is_newsletter_pop_active')->default(false);
             $table->boolean('is_info_pop_active')->default(false);
+            $table->boolean('is_pwa_enabled')->default(0);
             $table->json('custom_styles')->nullable();
             $table->text('custom_css')->nullable();
             $table->text('custom_js')->nullable();

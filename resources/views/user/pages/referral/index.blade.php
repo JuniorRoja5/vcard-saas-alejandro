@@ -11,7 +11,7 @@
                             {{ __('Overview') }}
                         </div>
                         <h2 class="page-title">
-                            {{ __('My Earnings') }}
+                            {{ __('Referrals') }}
                         </h2>
                     </div>
                 </div>
@@ -46,70 +46,35 @@
 
                 {{-- Referral Details --}}
                 <div class="row row-deck row-cards">
-                    {{-- New My Earnings Dashboard --}}
-                <div class="col-12 mb-4">
-                    <div class="row">
-                        {{-- Referral Earnings --}}
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="card mb-3">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="subheader">{{ __('Referral Earnings') }}</div>
-                                    </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="h1 mb-0 me-2">{{ formatCurrency($totalReferrals) }}</div>
-                                    </div>
-                                    <div class="text-muted">{{ count($referralEarnings) }} {{ __('referrals') }}</div>
+                    {{-- Referral Amount --}}
+                    <div class="col-sm-3 col-lg-3">
+                        <div class="card mb-4">
+                            <div class="card-stamp">
+                                <div class="card-stamp-icon bg-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round"
+                                        class="icon icon-tabler icons-tabler-outline icon-tabler-coin">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                                        <path
+                                            d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1" />
+                                        <path d="M12 7v10" />
+                                    </svg>
                                 </div>
                             </div>
-                        </div>
-                        
-                        {{-- Product Sales --}}
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="card mb-3">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="subheader">{{ __('Product Sales') }}</div>
-                                    </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="h1 mb-0 me-2">{{ formatCurrency($totalProducts) }}</div>
-                                    </div>
-                                    <div class="text-muted">{{ count($productSales) }} {{ __('sales') }}</div>
-                                </div>
+                            <div class="card-header">
+                                <h3 class="card-title">{{ __('Overall Earnings') }}</h3>
                             </div>
-                        </div>
-                        
-                        {{-- Service Sales --}}
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="card mb-3">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="subheader">{{ __('Service Sales') }}</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 col-lg-12">
+                                        <h2 class="card-title">{{ formatCurrency($overAllEarning) }}</h2>
                                     </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="h1 mb-0 me-2">{{ formatCurrency($totalServices) }}</div>
-                                    </div>
-                                    <div class="text-muted">{{ count($serviceSales) }} {{ __('sales') }}</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {{-- Total Available --}}
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="card mb-3 border-primary">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="subheader text-primary">{{ __('Total Available') }}</div>
-                                    </div>
-                                    <div class="d-flex align-items-baseline">
-                                        <div class="h1 mb-0 me-2 text-primary">{{ formatCurrency($overAllEarning) }}</div>
-                                    </div>
-                                    <div class="text-muted">{{ __('Ready to withdraw') }}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
                     {{-- Referral List --}}
                     <div class="col-sm-3 col-lg-3">

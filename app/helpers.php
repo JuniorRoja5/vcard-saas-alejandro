@@ -52,6 +52,47 @@ if (!function_exists('formatCurrency')) {
     }
 }
 
+// Vcard format
+if (!function_exists('formatCurrencyVcard')) {
+    function formatCurrencyVcard($amount, $currencyCode = 'USD')
+    {
+        // Fetch settings from the database
+        $config = DB::table('config')->get();
+        $currencies = Currency::get();
+
+        // Set decimal value
+        $setCurrencyCode = $currencyCode ?? 'USD'; // Default fallback
+        $formatType = $config[55]->config_value ?? '1.234.567,89';
+        $setDecimalsPlaces = (int)($config[56]->config_value ?? 2);
+
+        // Initialize currency variables
+        $currencySymbol = '';
+        $symbolFirst = true;
+
+        // Loop through the currencies and find the one matching the setCurrencyCode
+        foreach ($currencies as $currency) {
+            if ($currency->iso_code === $setCurrencyCode) {
+                $currencySymbol = $currency->symbol;
+                $symbolFirst = $currency->symbol_first !== "false";
+                break;
+            }
+        }
+
+        // Format the amount based on format type
+        $formattedAmount = match ($formatType) {
+            '1,234,567.89' => number_format($amount, $setDecimalsPlaces, '.', ','),
+            '12,34,567.89' => formatIndianNumber($amount, $setDecimalsPlaces),
+            '1.234.567,89' => number_format($amount, $setDecimalsPlaces, ',', '.'),
+            '1 234 567,89' => number_format($amount, $setDecimalsPlaces, ',', ' '),
+            "1'234'567.89" => number_format($amount, $setDecimalsPlaces, '.', "'"),
+            default => number_format($amount, $setDecimalsPlaces, '.', ','),
+        };
+
+        return $symbolFirst ? $currencySymbol . $formattedAmount : $formattedAmount . $currencySymbol;
+    }
+}
+
+// Store currency format
 if (!function_exists('formatCurrencyCard')) {
     function formatCurrencyCard($amount)
     {
@@ -72,7 +113,7 @@ if (!function_exists('formatCurrencyCard')) {
 
         return $formattedAmount;
     }
-}
+} 
 
 if (!function_exists('formatIndianNumber')) {
     // Custom function for Indian numbering system

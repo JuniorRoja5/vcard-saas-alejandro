@@ -18,6 +18,7 @@ use App\Setting;
 use App\Currency;
 use Carbon\Carbon;
 use App\BusinessCard;
+use App\StoreBusinessHour;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -155,7 +156,7 @@ class CreateController extends Controller
                     // Card ID
                     $card_id = $cardId;
 
-                    // Save
+                    // // Save
                     $card = new BusinessCard();
                     $card->card_id = $card_id;
                     $card->user_id = Auth::user()->user_id;
@@ -169,6 +170,37 @@ class CreateController extends Controller
                     $card->sub_title = $request->subtitle;
                     $card->description = json_encode($store_details);
                     $card->save();
+
+                    // Set default business hours for store
+                    $business_hours = [];
+                    $business_hours['monday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['tuesday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['wednesday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['thursday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['friday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['saturday'] = ['start' => '00:01', 'end' => '23:59'];
+                    $business_hours['sunday'] = ['start' => '00:01', 'end' => '23:59'];
+
+                    $request->business_hours = $business_hours;
+
+                    $businessHour = new StoreBusinessHour();
+                    $businessHour->user_id = Auth::user()->user_id;
+                    $businessHour->store_id = $card_id;
+                    $businessHour->business_hours_id = uniqid();
+                    $businessHour->business_hours = json_encode($request->business_hours);
+                    $businessHour->status = 1;
+                    $businessHour->save();
+
+                    // Set default delivery options for store
+                    $delivery_options = [];
+                    $delivery_options['order_for_delivery'] = 1;
+                    $delivery_options['take_away'] = 0;
+                    $delivery_options['dine_in'] = 0;
+                    $request->delivery_options = $delivery_options;
+
+                    $business_card = BusinessCard::where('card_id', $card_id)->first();
+                    $business_card->delivery_options = json_encode($request->delivery_options);
+                    $business_card->save();
 
                     return redirect()->route('user.edit.products', $card_id)->with('success', trans('New WhatsApp Store Created Successfully!'));
                 } catch (\Exception $th) {

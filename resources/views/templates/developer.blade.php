@@ -4,13 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $card_details->title }}</title>
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @if(isset($business_card_details->seo_configurations) && json_decode($business_card_details->seo_configurations)->favicon != null)
+        <link rel="icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}">
+    @else
+        <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @endif
 
     <meta name="theme-color" content="#FFF7ED" />
 
@@ -91,7 +95,7 @@
 
     {{-- Check PWA --}}
     @if ($plan_details != null)
-        @if ($plan_details['pwa'] == 1)
+        @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
             @laravelPWA
 
             <!-- Web Application Manifest -->
@@ -286,7 +290,7 @@
                         @if (!empty($feature_details) && count($feature_details) > 0)
                             @php
                                 // List of excluded feature types
-                                $excludedTypes = ['email', 'tel', 'address', 'wa', 'map', 'iframe', 'youtube'];
+                                $excludedTypes = ['email', 'tel', 'instagram', 'address', 'map', 'iframe', 'youtube'];
 
                                 // Filter the features to include only valid ones
                                 $validFeatures = collect($feature_details)->filter(function ($feature) use ($excludedTypes) {
@@ -360,14 +364,15 @@
                                                             {{ $service_detail->service_description }}
                                                         </p>
                                                         <!-- Enquiry Button -->
-                                                        <!-- Buy Button -->
-                                                        @if ($service_detail->price > 0)
-                                                            <div class="mt-4">
-                                                                <button onclick="buyService({{ $service_detail->id }})" type="button"
-                                                                    class="text-gray-50 px-6 py-2 bg-orange-400 text-base font-semibold border border-orange-200 rounded-lg hover:bg-orange-600 transition-colors">
-                                                                    {{ __("Buy Now - $") }}{{ $service_detail->price }}
-                                                                </button>
-                                                            </div>
+                                                        @if ($enquiry_button != null)
+                                                            @if ($whatsAppNumberExists == true && $whatsAppNumberExists == true && $service_detail->enable_enquiry == 'Enabled')
+                                                                {{-- Enquire --}}
+                                                                <div class="flex items-start justify-start w-full">
+                                                                    <div class="flex items-start justify-start w-12 h-12 bg-orange-50 text-orange-600 rounded-full">
+                                                                        <a href="https://wa.me/{{ $enquiry_button }}?text={{ __('Hi, I am interested in your product/service:') }} {{ $service_detail->service_name }}. {{ __('Please provide more details.') }}" target="_blank" class="text-base font-medium mt-1 px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-600 inline-block">{{ __('Enquire') }}</a>
+                                                                    </div>
+                                                                </div>
+                                                            @endif
                                                         @endif
                                                     </div>
                                                 </div>
@@ -407,7 +412,7 @@
                                                 </h2>
                                                 {{-- Description --}}
                                                 <p class="text-gray-500 font-normal mb-4">
-                                                    {{ $product_detail->product_subtitle }}
+                                                    {{ $product_detail->product_description }}
                                                 </p>
 
                                                 <!-- Price & Booking Section -->
@@ -417,10 +422,10 @@
                                                         <div>
                                                             <h4 class="text-[#000000] text-xl font-bold">
                                                                 {{ __('Price:') }}
-                                                                <span class="text-gray-500 font-medium"> {{ formatCurrency($product_detail->sales_price) }}</span>
+                                                                <span class="text-gray-500 font-medium"> {{ formatCurrencyVcard($product_detail->sales_price, $product_detail->currency) }}</span>
                                                                 {{-- Check regular price is exists --}}
                                                                 @if ($product_detail->sales_price != $product_detail->regular_price)
-                                                                    <span class="line-through ml-2 text-gray-500 text-base"> {{ formatCurrency($product_detail->regular_price) }}</span>
+                                                                    <span class="line-through ml-2 text-gray-500 text-base"> {{ formatCurrencyVcard($product_detail->regular_price, $product_detail->currency) }}</span>
                                                                 @endif
                                                             </h4>
                                                         </div>
@@ -432,14 +437,16 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Buy Now Button -->
-                                                    @if ($product_detail->sales_price > 0)
-                                                        <div class="mt-4 lg:mt-0 lg:mt-0 lg:w-auto w-full">
-                                                            <button onclick="buyProduct({{ $product_detail->id }})" type="button"
-                                                                class="text-gray-50 w-full px-12 lg:w-auto bg-orange-400 text-base font-semibold border border-orange-200 py-3 rounded-xl hover:bg-orange-600 transition-colors block text-center">
-                                                                {{ __('Buy Now - $') }}{{ $product_detail->sales_price }}
-                                                            </button>
-                                                        </div>
+                                                    <!-- Enquiry Button -->
+                                                    @if ($enquiry_button != null)
+                                                        @if ($whatsAppNumberExists == true)
+                                                            <div class="mt-4 lg:mt-0 lg:mt-0 lg:w-auto w-full">
+                                                                <a href="https://wa.me/{{ $enquiry_button }}?text={{ __('Hi, I am interested in your product:') }} {{ $product_detail->product_name }}. {{ __('Please provide more details.') }}" target="_blank"
+                                                                    class="text-gray-50 w-full px-12 lg:w-auto bg-orange-400 text-base font-semibold border border-orange-200 py-3 rounded-xl hover:bg-orange-600 transition-colors block text-center">
+                                                                    {{ __('Enquire') }}
+                                                                </a>
+                                                            </div>
+                                                        @endif
                                                     @endif
                                                 </div>
                                                 <!-- End Price & Booking Section -->
@@ -627,7 +634,7 @@
                                                 <button id="add-slot-button"
                                                     class="w-full p-3 bg-orange-400 text-white text-lg text-center rounded-xl font-semibold border border-orange-600" onclick="validateAndShowModal()">
                                                     {{ __('Book Appointment') }}
-                                                </a>
+                                                </button>
                                             </div>
                                         </div>
                                     @endif
@@ -881,7 +888,7 @@
                                             </div>
                                                     
                                             {{-- ReCaptcha --}}
-                                            @include('templates.includes.recaptcha')
+                                            @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-one'])
 
                                         </div>
 
@@ -890,7 +897,7 @@
                                             <button type="submit"
                                                 class="w-full px-4 py-4 bg-orange-400 text-white text-lg font-semibold rounded-xl focus:outline-none border border-orange-600 hover:bg-orange-500">
                                                 {{ __('Send') }}
-                                            </a>
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -957,7 +964,7 @@
                             <path d="M10 14l11 -11" />
                             <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Download Icon -->
@@ -990,7 +997,7 @@
                             <path d="M16 20h2a2 2 0 0 0 2 -2v-2" />
                             <path d="M7 12h10" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Share Icon -->
@@ -1008,7 +1015,7 @@
                             <path d="M8.7 10.7l6.6 -3.4" />
                             <path d="M8.7 13.3l6.6 3.4" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
             </div>
             <!-- End Floating icon button bar section -->
@@ -1066,17 +1073,17 @@
                     </div>
 
                     {{-- ReCaptcha --}}
-                    @include('templates.includes.recaptcha')
+                    @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-two'])
 
                     <!-- Submit and Close Buttons -->
                     <div class="flex justify-between">
                         <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
                             onclick="validateAndShowModal()">
                             {{ __('Close') }}
-                        </a>
+                        </button>
                         <button type="submit" id="bookAppointmentButton" class="bg-orange-400 text-white px-4 py-2 rounded-lg hover:bg-orange-600">
                             {{ __('Submit') }}
-                        </a>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1121,7 +1128,7 @@
                 <div class="flex justify-center">
                     <button onclick="copyLink()" class="bg-orange-400 text-white font-bold py-2 px-4 rounded-xl w-full border border-orange-600">
                         {{ __('Copy Link') }}
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1145,7 +1152,7 @@
                     <button onclick="sendMessage()"
                         class="bg-orange-400 text-white font-bold py-2 px-4 rounded-xl w-full border border-orange-600">
                         {{ __('Send') }}
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1163,7 +1170,7 @@
 
                 <!-- Submit Button -->
                 <div class="flex justify-center">
-                    <button onclick="downloadQr('{{ route('dynamic.card', $business_card_details->card_id) }}', 500)" id="download"
+                    <button onclick="downloadQr('{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}', 500)" id="download"
                         class="bg-orange-100 border border-orange-200 font-bold p-3 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1174,7 +1181,7 @@
                             <path d="M7 11l5 5l5 -5" />
                             <path d="M12 4l0 12" />
                         </svg>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1223,7 +1230,7 @@
 
                                     <div class="flex flex-col space-y-4 mt-3">
                                         <button type="submit"
-                                            class="bg-orange-500 text-white px-4 py-2 mt-2 rounded-lg hover:bg-orange-500 transition duration-300">{{ __('Password') }}</a>
+                                            class="bg-orange-500 text-white px-4 py-2 mt-2 rounded-lg hover:bg-orange-500 transition duration-300">{{ __('Password') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -1236,7 +1243,7 @@
         <!-- Include PWA modal -->
         @if ($plan_details != null)
             {{-- Check PWA --}}
-            @if ($plan_details['pwa'] == 1)
+            @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
                 @include('vendor.laravelpwa.new_pwa_modal', [
                     'primary_color' => 'orange',
                     'img' => $business_card_details->profile
@@ -1257,12 +1264,11 @@
         {{-- Include Information Popup Modal --}}
         @if ($business_card_details != null)
             {{-- Check Information Popup --}}
-            {{-- Popup automático comentado - Solo aparece tras pago exitoso --}}
-            {{-- @if (!empty($business_card_details->is_info_pop_active) && $business_card_details->is_info_pop_active == 1) --}}
-                {{-- @include('templates.includes.information_popup_modal', [
+            @if (!empty($business_card_details->is_info_pop_active) && $business_card_details->is_info_pop_active == 1)
+                @include('templates.includes.information_popup_modal', [
                     'primary_color' => 'orange'
-                ]) --}}
-            {{-- @endif --}}
+                ])
+            @endif
         @endif
     </div>
 
@@ -1339,16 +1345,33 @@
             }
         }
 
-        // Handle form submission
+        // Store reCAPTCHA widget instances globally
+        window.recaptchaWidgets = {};
+
+        // Callback once reCAPTCHA script is loaded
+        function onloadCallback() {
+            // Explicitly render reCAPTCHA and assign to widget map
+            window.recaptchaWidgets['recaptcha-one'] = grecaptcha.render('recaptcha-one', {
+                'sitekey': '{{ env('RECAPTCHA_SITE_KEY') }}'
+            });
+
+            // You can render another one like this if needed:
+            window.recaptchaWidgets['recaptcha-two'] = grecaptcha.render('recaptcha-two', {
+                'sitekey': '{{ env('RECAPTCHA_SITE_KEY') }}'
+            });
+        }
+
+        // Handle appointment form submission
         document.getElementById('appointmentForm').addEventListener('submit', function(event) {
             "use strict";
-            
+
             event.preventDefault();
 
-            // Get the button element
             const button = document.getElementById('bookAppointmentButton');
+            const errorSubmitMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
 
-            // Disable the button and show loader
+            // Show loader on button
             button.disabled = true;
             button.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-loader animate-spin h-5 w-5 text-white inline-block mr-2">
@@ -1365,9 +1388,6 @@
                 {{ __('Booking...') }}
             `;
 
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
-
             // Gather form data
             const formData = {
                 name: document.getElementById('name').value,
@@ -1380,49 +1400,67 @@
                 card: `{{ $business_card_details->card_id }}`
             };
 
-            // Conditionally add reCAPTCHA response
+            // Add reCAPTCHA response if enabled
             @if(env('RECAPTCHA_ENABLE') == 'on')
-                formData.g_recaptcha_response = grecaptcha.getResponse();
+                formData.g_recaptcha_response = grecaptcha.getResponse(window.recaptchaWidgets['recaptcha-one']);
+
+                if (!formData.g_recaptcha_response) {
+                    // Try second reCAPTCHA widget
+                    formData.g_recaptcha_response = grecaptcha.getResponse(window.recaptchaWidgets['recaptcha-two']);
+                }
             @endif
 
-            // Send data to Laravel route using fetch API
+            // Send data via fetch
             fetch("{{ route('book.appointment') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include CSRF token for security
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(data => {
-                    // Handle success or error response from the server
-                    if (data.status == 200) {
-                        // Reset the form fields
-                        document.getElementById('email').value = "";
-                        document.getElementById('phone').value = "";
-                        document.getElementById('name').value = "";
-                        document.getElementById('notes').value = "";
-                        document.getElementById('price').value = "";
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(async response => {
+                const data = await response.json();
 
-                        // Get available time slots in Send data to Laravel route using fetch API
-                        generateOption("", "");
+                if (response.ok) {
+                    // Reset form
+                    ['name', 'email', 'phone', 'notes', 'appointment-date', 'time-slot-select', 'price'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
 
-                        successMessage.classList.remove('hidden'); // Hide any previous success message
-                        toggleModal(); // Close the modal on success
+                    generateOption("", "");
 
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = `{{ __('Book Appointment') }}`;
-                    } else {
-                        // If either field is empty, show an success message
-                        errorSubmitMessage.classList.remove('hidden');
-                        toggleModal(); // Close the modal on error
+                    successMessage.classList.remove('hidden');
+                    errorSubmitMessage.classList.add('hidden');
 
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = `{{ __('Book Appointment') }}`;
+                    // Reset reCAPTCHA
+                    @if(env('RECAPTCHA_ENABLE') == 'on')
+                        grecaptcha.reset(window.recaptchaWidgets['recaptcha-one']);
+                    @endif
+
+                    toggleModal();
+                } else {
+                    if (data.errors) {
+                        console.error('Validation Errors:', data.errors);
                     }
-                });
+
+                    successMessage.classList.add('hidden');
+                    errorSubmitMessage.classList.remove('hidden');
+                    errorSubmitMessage.innerHTML = data.message || 'Something went wrong';
+
+                    toggleModal();
+                }
+
+                button.disabled = false;
+                button.innerHTML = `{{ __('Book Appointment') }}`;
+            })
+            .catch(error => {
+                console.error('Request failed:', error);
+                toggleModal();
+
+                button.disabled = false;
+                button.innerHTML = `{{ __('Book Appointment') }}`;
+            });
         });
     </script>
     <script>
@@ -1467,7 +1505,7 @@
         // Generate QR Code and place in shareQrCode using qrious
         const qr = new QRious({
             element: document.getElementById('shareQrCode'),
-            value: `{{ route('dynamic.card', $business_card_details->card_id) }}`, 
+            value: `{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`, 
             size: 200,
             background: 'white',      // Background color
             foreground: 'black',      // Foreground (QR code) color
@@ -1496,7 +1534,7 @@
         window.onload = function() {
             "use strict";
 
-            updateQr(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            updateQr(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
         };
 
         // Copy Link
@@ -1504,7 +1542,7 @@
             "use strict";
             
             // From browser url to clipboard
-            navigator.clipboard.writeText(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            navigator.clipboard.writeText(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
             alert("Link copied to clipboard!");
         }
 
@@ -1548,139 +1586,5 @@
             easing: "easeInOutCubic", // Scroll easing function
         });
     </script>
-
-<!-- Stripe.js for ClickMyLink -->
-<script src="https://js.stripe.com/v3/"></script>
-<script>
-
-<!-- Stripe Elements JavaScript -->
-<script src="https://js.stripe.com/v3/"></script>
-<script>
-    // Datos del popup personalizado del usuario
-    @php
-        $information_pop = App\InformationPop::where('card_id', $business_card_details->card_id)->first();
-    @endphp
-
-    const popupData = {
-        title: "{{ $information_pop ? $information_pop->info_pop_title : 'Payment Successful' }}",
-        description: "{{ $information_pop ? $information_pop->info_pop_desc : 'Your payment has been processed successfully.' }}",
-        buttonText: "{{ $information_pop ? $information_pop->info_pop_button_text : 'Close' }}",
-        buttonUrl: "{{ $information_pop ? $information_pop->info_pop_button_url : '#' }}",
-        confettiEnabled: {{ $information_pop ? $information_pop->confetti_effect : 0 }}
-    };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-    // Inicializar Stripe
-var stripe = Stripe('{{ env("STRIPE_KEY") }}');
-var elements = null;
-var paymentElement = null;
-
-function buyService(serviceId) {
-    document.getElementById('checkoutModal').style.display = 'block';
-    document.getElementById('modalServiceName').textContent = 'Loading...';
-    document.getElementById('modalServicePrice').textContent = '$0.00';
-
-    fetch("/checkout/create-session/service/" + serviceId, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.client_secret) {
-            document.getElementById('modalServiceName').textContent = data.service_name;
-            document.getElementById('modalServicePrice').textContent = '$' + data.amount;
-            
-            elements = stripe.elements({ clientSecret: data.client_secret });
-            paymentElement = elements.create('payment');
-            paymentElement.mount('#payment-element');
-            
-            window.currentClientSecret = data.client_secret;
-        }
-    });
-}
-
-function buyProduct(productId) {
-    document.getElementById('checkoutModal').style.display = 'block';
-    document.getElementById('modalServiceName').textContent = 'Loading...';
-    document.getElementById('modalServicePrice').textContent = '$0.00';
-
-    fetch("/checkout/create-session/" + productId, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.client_secret) {
-            document.getElementById('modalServiceName').textContent = data.product_name;
-            document.getElementById('modalServicePrice').textContent = '$' + data.amount;
-            
-            elements = stripe.elements({ clientSecret: data.client_secret });
-            paymentElement = elements.create('payment');
-            paymentElement.mount('#payment-element');
-            
-            window.currentClientSecret = data.client_secret;
-        }
-    });
-}
-
-    async function handlePayment(clientSecret) {
-        const {error} = await stripe.confirmPayment({
-            elements,
-            confirmParams: {},
-            redirect: 'if_required'
-        });
-        if (error) {
-            console.error('Error:', error);
-        } else {
-            closeCheckoutModal();
-            showSuccessPopup();
-        }
-    }
-
-    function closeCheckoutModal() {
-        document.getElementById('checkoutModal').style.display = 'none';
-        if (paymentElement) {
-            paymentElement.unmount();
-            paymentElement = null;
-        }
-        elements = null;
-    }
-
-    function showSuccessPopup() {
-        const modal = document.createElement('div');
-        modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 400px;"><h2 style="color: #22c55e; margin-bottom: 15px;">' + popupData.title + '</h2><p style="margin-bottom: 20px;">' + popupData.description + '</p><button onclick="window.open(\'' + popupData.buttonUrl + '\', \'_blank\'); this.closest(\'div\').parentElement.remove();" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">' + popupData.buttonText + '</button><button onclick="this.closest(\'div\').parentElement.remove();" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Thank you</button></div></div>';
-        document.body.appendChild(modal);
-        if (popupData.confettiEnabled == 1) {
-            confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }});
-        }
-    }
-</script>
-
-<!-- Modal de Checkout Embebido -->
-<div id="checkoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h3 id="modalServiceName">Service</h3>
-            <p id="modalServicePrice">$0.00</p>
-        </div>
-        <div id="payment-element"></div>
-        <div style="margin-top: 20px; text-align: center;">
-            <button id="submit-payment" onclick="handlePayment(window.currentClientSecret)" style="background: #5469d4; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                Pay Now
-            </button>
-            <button onclick="closeCheckoutModal()" style="background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">
-                Cancel
-            </button>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>

@@ -1,0 +1,199 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\VcardProduct;
+use App\ProductOrder;
+use App\User;
+use App\BusinessCard;
+use Exception;
+
+class CheckoutController extends Controller
+{
+    public function __construct()
+    {
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+    }
+
+    /**
+     * Crear sesión de checkout de Stripe
+     */
+    public function createSession($productId)
+{
+    try {
+        $config = \DB::table("config")->get();
+        \Stripe\Stripe::setApiKey($config[10]->config_value);
+        
+        $product = \App\VcardProduct::findOrFail($productId);
+        $businessCard = \App\BusinessCard::where("card_id", $product->card_id)->first();
+        $user = \App\User::where("user_id", $businessCard->user_id)->first();
+        
+        // Calcular comisión (5%)
+        $amount = $product->sales_price * 100; // Stripe usa centavos
+        $commission = $amount * 0.05; // 5% para ClickMyLink
+        
+        $paymentIntent = \Stripe\PaymentIntent::create([
+            'amount' => $amount,
+            'currency' => strtolower($product->currency ?? "usd"),
+            'payment_method_types' => ['card'],
+            // 'application_fee_amount' => $commission, // ← COMENTAR TEMPORALMENTE
+            'metadata' => [
+                'product_id' => $productId,
+                'product_name' => $product->product_name,
+                'user_id' => $user->user_id
+            ]
+        ]);
+        
+        return response()->json([
+            'client_secret' => $paymentIntent->client_secret,
+            'amount' => $product->sales_price,
+            'product_name' => $product->product_name
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(["error" => $e->getMessage()], 500);
+    }
+}
+
+    /**
+     * Página de éxito después del pago
+     */
+    public function success(Request $request)
+    {
+        $session_id = $request->get('session_id');
+        
+        try {
+            // Recuperar sesión de Stripe
+            $session = \Stripe\Checkout\Session::retrieve($session_id);
+            
+            // Buscar la orden
+            $order = ProductOrder::where('stripe_session_id', $session_id)->first();
+            
+            if ($order) {
+                $product = VcardProduct::find($order->product_id);
+                
+                return view('checkout.success', compact('order', 'product', 'session'));
+            }
+
+        } catch (Exception $e) {
+            Log::error('Error en página de éxito: ' . $e->getMessage());
+        }
+
+        return view('checkout.success')->with('message', 'Pago procesado exitosamente');
+    }
+
+    /**
+     * Webhook para confirmar pagos
+     */
+    public function webhook(Request $request)
+    {
+        $payload = $request->getContent();
+        $sig_header = $request->header('Stripe-Signature');
+        $endpoint_secret = config('services.stripe.webhook_secret');
+
+        try {
+            $event = \Stripe\Webhook::constructEvent($payload, $sig_header, $endpoint_secret);
+
+            // Manejar diferentes tipos de eventos
+            switch ($event['type']) {
+                case 'checkout.session.completed':
+                    $this->handleCheckoutCompleted($event['data']['object']);
+                    break;
+                    
+                case 'payment_intent.succeeded':
+                    $this->handlePaymentSucceeded($event['data']['object']);
+                    break;
+                    
+                default:
+                    Log::info('Evento de webhook no manejado: ' . $event['type']);
+            }
+
+            return response()->json(['status' => 'success']);
+
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            Log::error('Error de verificación de webhook: ' . $e->getMessage());
+            return response()->json(['error' => 'Invalid signature'], 400);
+        } catch (Exception $e) {
+            Log::error('Error procesando webhook: ' . $e->getMessage());
+            return response()->json(['error' => 'Webhook error'], 500);
+        }
+    }
+
+    /**
+     * Manejar checkout completado
+     */
+    private function handleCheckoutCompleted($session)
+    {
+        try {
+            // Buscar la orden por session_id
+            $order = ProductOrder::where('stripe_session_id', $session['id'])->first();
+            
+            if ($order) {
+                $order->update([
+                    'buyer_email' => $session['customer_details']['email'] ?? '',
+                    'buyer_name' => $session['customer_details']['name'] ?? '',
+                    'status' => 'completed'
+                ]);
+
+                Log::info('Orden completada: ' . $order->order_id);
+                
+                // Aquí puedes añadir lógica adicional como:
+                // - Enviar email de confirmación
+                // - Generar enlace de descarga para productos digitales
+                // - Notificar al vendedor
+            }
+
+        } catch (Exception $e) {
+            Log::error('Error manejando checkout completado: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Manejar pago exitoso
+     */
+    private function handlePaymentSucceeded($payment_intent)
+    {
+        Log::info('Pago exitoso: ' . $payment_intent['id']);
+        
+        // Lógica adicional si es necesaria
+    }
+
+    public function createServiceSession($serviceId)
+    {
+       try {
+        $config = \DB::table("config")->get();
+        \Stripe\Stripe::setApiKey($config[10]->config_value);
+        
+        $service = \App\Service::findOrFail($serviceId);
+        $businessCard = \App\BusinessCard::where("card_id", $service->card_id)->first();
+        $user = \App\User::where("user_id", $businessCard->user_id)->first();
+
+        // Calcular comisión (5%)
+        $amount = $service->price * 100; // Stripe usa centavos
+        $commission = $amount * 0.05; // 5% para ClickMyLink
+
+        $paymentIntent = \Stripe\PaymentIntent::create([
+            'amount' => $amount,
+            'currency' => strtolower($service->currency ?? "usd"),
+            'payment_method_types' => ['card'],
+            // 'application_fee_amount' => $commission, // ← COMENTAR TEMPORALMENTE
+            'metadata' => [
+                'service_id' => $serviceId,
+                'service_name' => $service->service_name,
+                'user_id' => $user->user_id
+            ]
+        ]);
+
+        return response()->json([
+            'client_secret' => $paymentIntent->client_secret,
+            'amount' => $service->price,
+            'service_name' => $service->service_name
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(["error" => $e->getMessage()], 500);
+        }
+    }
+
+}

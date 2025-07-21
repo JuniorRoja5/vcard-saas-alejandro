@@ -79,56 +79,65 @@ class PaymentLinkController extends Controller
             return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
         }
 
-        // Check if new icons are submitted
-        if ($request->has('icon') && is_array($request->icon)) {
-
-            // Fetch user plan
-            $plan = DB::table('users')->where('user_id', Auth::id())->where('status', 1)->first();
-            $plan_details = json_decode($plan->plan_details ?? '{}');
-
-            // Validate limit
-            if (count($request->icon) <= ($plan_details->no_of_payments ?? 0)) {
-                return redirect()->route('user.edit.payment.links', $id)->with('failed', trans('Maximum links limit exceeded.'));
-            }
-
-            // Delete old payment links
+        // If no icons are submitted or empty array, delete all existing payment links
+        if (!$request->has('icon') || !is_array($request->icon) || empty($request->icon)) {
             Payment::where('card_id', $id)->delete();
 
-            // Loop through and save each payment link
-            foreach ($request->icon as $i => $icon) {
-                if (
-                    isset($request->type[$i]) &&
-                    isset($request->label[$i]) &&
-                    isset($request->value[$i])
-                ) {
-                    $payment = new Payment();
-                    $payment->card_id = $id;
-                    $payment->type = $request->type[$i];
-                    $payment->icon = $icon;
-                    $payment->label = $request->label[$i];
-                    $payment->position = $i + 1;
-
-                    // Handle file upload if type is image
-                    if ($request->type[$i] === 'image' && $request->hasFile("value.$i")) {
-                        $file = $request->file("value.$i");
-                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                        $path = $file->storeAs('payments', $filename, 'public');
-                        $payment->content = "storage/" . $path;
-                    } else {
-                        $payment->content = $request->value[$i];
-                    }
-
-                    $payment->save();
-                } else {
-                    // Incomplete data
-                    Payment::where('card_id', $id)->delete();
-                    return redirect()->route('user.edit.payment.links', $id)->with('failed', trans('Please fill out all required fields.'));
-                }
-            }
-
-            return redirect()->route('user.edit.services', $id)->with('success', trans('Payment links are updated.'));
+            return redirect()->route('user.edit.services', $id)
+                ->with('success', trans('All payment links have been removed.'));
         }
 
-        return redirect()->route('user.edit.services', $id)->with('success', trans('Payment links are updated.'));
+        // Fetch user plan
+        $plan = DB::table('users')
+            ->where('user_id', Auth::user()->user_id)
+            ->where('status', 1)
+            ->first();
+        $plan_details = json_decode($plan->plan_details ?? '{}');
+        $max_allowed = (int) ($plan_details->no_of_payments ?? 0);
+
+        // Validate limit - Reject if count is more than allowed
+        if (count($request->icon) > $max_allowed) {
+            return redirect()->route('user.edit.payment.links', $id)
+                ->with('failed', trans('Maximum links limit exceeded.'));
+        }
+
+        // Validate all required fields before deleting existing links
+        foreach ($request->icon as $i => $icon) {
+            if (
+                !isset($request->type[$i]) ||
+                !isset($request->label[$i]) ||
+                (!isset($request->value[$i]) && !$request->hasFile("value.$i"))
+            ) {
+                return redirect()->route('user.edit.payment.links', $id)
+                    ->with('failed', trans('Please fill out all required fields.'));
+            }
+        }
+
+        // All fields validated, now delete old links
+        Payment::where('card_id', $id)->delete();
+
+        // Save each new payment link
+        foreach ($request->icon as $i => $icon) {
+            $payment = new Payment();
+            $payment->card_id = $id;
+            $payment->type = $request->type[$i];
+            $payment->icon = $icon;
+            $payment->label = $request->label[$i];
+            $payment->position = $i + 1;
+
+            if ($request->type[$i] === 'image' && $request->hasFile("value.$i")) {
+                $file = $request->file("value.$i");
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('payments', $filename, 'public');
+                $payment->content = "storage/" . $path;
+            } else {
+                $payment->content = $request->value[$i];
+            }
+
+            $payment->save();
+        }
+
+        return redirect()->route('user.edit.services', $id)
+            ->with('success', trans('Payment links are updated.'));
     }
 }

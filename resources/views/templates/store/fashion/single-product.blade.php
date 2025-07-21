@@ -5,14 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ $card_details->title }}</title>
 
     {{-- CSRF Token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Store icon and color --}}
-    <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @if(isset($business_card_details->seo_configurations) && json_decode($business_card_details->seo_configurations)->favicon != null)
+        <link rel="icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}">
+    @else
+        <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @endif
 
     <meta name="theme-color" content="dark" />
 
@@ -192,9 +196,11 @@
                                         <div class="d-flex flex-column">
                                             <!-- Regular Price -->
                                             @if ($product_details->sales_price != $product_details->regular_price)
+                                                @if ($product_details->regular_price)
                                                 <p class="text-muted fs-2 m-0">
                                                     <del>{{ $currency }}{{ formatCurrencyCard($product_details->regular_price) }}</del>
                                                 </p>
+                                                @endif
                                             @endif
                                             <p class="m-0 fs-1 fw-semibold text-dark">
                                                 {{ $currency }}{{ formatCurrencyCard($product_details->sales_price) }}
@@ -204,9 +210,11 @@
 
                                     <!-- Batches -->
                                     <div class="badge-container d-flex flex-wrap align-items-center gap-2 my-3">
-                                        <span class="badge">
-                                            {{ $product_details->badge }}
-                                        </span>
+                                        @if ($product_details->badge)
+                                            <span class="badge">
+                                                {{ $product_details->badge }}
+                                            </span>
+                                        @endif
                                         <span class="badge">
                                             {{ $product_details->product_status == 'instock' ? __('In Stock') : __('Out of Stock') }}
                                         </span>
@@ -280,13 +288,15 @@
                                                                     @endforeach
                                                                 </div>
                                                             </div>
-                                                            <!-- Badge -->
-                                                            <div
-                                                                class="badge-container d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                                <span class="badge">
-                                                                    {{ $product->badge }}
-                                                                </span>
-                                                            </div>
+                                                            @if ($product->badge)
+                                                                <!-- Badge -->
+                                                                <div
+                                                                    class="badge-container d-flex flex-wrap align-items-center gap-2 mb-2">
+                                                                    <span class="badge">
+                                                                        {{ $product->badge }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif
                                                             <!-- Product Name -->
                                                             <h3 id="{{ $product->product_id }}_product_name"
                                                                 class="fs-2 single-product mb-1 text-truncate text-dark"
@@ -314,9 +324,11 @@
 
                                                                 <!-- Regular Price -->
                                                                 @if ($product->sales_price != $product->regular_price)
+                                                                    @if ($product->regular_price)
                                                                     <p class="text-muted fs-4 m-0">
                                                                         <del>{{ $currency }}{{ formatCurrencyCard($product->regular_price) }}</del>
                                                                     </p>
+                                                                    @endif
                                                                 @else
                                                                     <del
                                                                         class="text-white fs-4 m-0">{{ $currency }}{{ $product->sales_price }}</del>
@@ -508,6 +520,12 @@
                         <label class="form-label" for="cus_notes">{{ __('Notes') }}</label>
                         <textarea class="form-control" id="cus_notes" name="cus_notes" rows="3"></textarea>
                     </div>
+
+                    {{-- Customer Notes --}}
+                    <div class="mb-3">
+                        <small>{{ __("Customer Notes") }}: </small>
+                        <small class="text-muted">{{ __("After you click the Confirm button, WhatsApp will open. Tap 'Send' in WhatsApp to send your order to the shop owner.") }}</small>
+                    </div>
                 </div>
                 <!-- Modal Footer -->
                 <div class="modal-footer">
@@ -530,6 +548,9 @@
     <div class="alert alert-important alert-success alert-float" id="successAlertContainer" role="alert">
         <div id="successAlertMessage"></div>
     </div>
+
+    {{-- WharApp Chat --}}
+    @include('templates.includes.whatsapp-float', ['businessImage' => $business_card_details->profile, 'businessName' => $card_details->title, 'whatsappNumber' => $enquiry_button])
 
     <!-- Core -->
     <script type="text/javascript" src="{{ url('js/tabler.min.js') }}"></script>
@@ -895,6 +916,16 @@
                     success: function (data) {
                         // Check if order was placed successfully
                         if (data.status == "success") {
+                            // Map of dynamic delivery type values to translated strings
+                            const deliveryTypeMap = {
+                                "Order For Delivery": "{{ __('Order For Delivery') }}",
+                                "Take Away": "{{ __('Take Away') }}",
+                                "Dine In": "{{ __('Dine In') }}"
+                            };
+
+                            let deliveryTypeKey = cusDetails[3]; // e.g., "pickup", "cod", etc.
+                            let deliveryType = deliveryTypeMap[deliveryTypeKey] || deliveryTypeKey;
+
                             // Add total and customer details to products list
                             productsList += `\n- - - - - - - - - - - - - - - - - - - -\n`;
                             productsList +=
@@ -903,7 +934,7 @@
                             productsList += `{{ __('Customer Name') }} : ${cusDetails[0]}\n`;
                             productsList += `{{ __('Contact Number') }} : ${cusDetails[1]}\n`;
                             productsList += `{{ __('Delivery Address') }} : ${cusDetails[2]}\n`;
-                            productsList += `{{ __('Delivery Type') }} : ${cusDetails[3]}\n`;
+                            productsList += `{{ __('Delivery Type') }} : ${deliveryType}\n`;
 
                             if (cusDetails[4]) {
                                 productsList += `{{ __('Notes') }} : ${cusDetails[4]}\n\n`;
@@ -917,7 +948,13 @@
 
                             // Construct WhatsApp link and open in new tab
                             const link = `https://api.whatsapp.com/send/?phone=${whatsAppNumber}&text=${encodeURI(waShareContent)}`;
-                            window.open(link, '_blank');
+                            // Confirm before opening
+                            const opened = window.open(link, '_blank');
+
+                            // Fallback if pop-up was blocked (especially on Safari)
+                            if (!opened) {
+                                window.location.href = link;
+                            }
 
                             // Reset cart and update local storage
                             cart = [];
@@ -935,8 +972,6 @@
                         errorAlert(error.responseJSON.message);
                     }
                 });
-
-                errorAlert('{{ __('Order Failed!') }}');
             } else {
                 // If customer details are invalid, prompt to place order
                 placeOrder();

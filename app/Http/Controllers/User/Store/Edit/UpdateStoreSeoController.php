@@ -12,11 +12,12 @@
 
 namespace App\Http\Controllers\User\Store\Edit;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Setting;
 use App\BusinessCard;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class UpdateStoreSeoController extends Controller
 {
@@ -84,10 +85,14 @@ class UpdateStoreSeoController extends Controller
             // Save favicon image
             $favicon = $request->file('favicon');
 
-            // Upload favicon image
-            $favicon->move(public_path('storage/store/favicon'), $request->store_id . '.png');
+            // Unique file name
+            $fileName = uniqid() . '.png';
 
-            $favicon = "storage/store/favicons/" . $request->store_id . '.png';
+            // Store the file in storage/app/public/vcard/favicons
+            Storage::disk('public')->putFileAs('store/favicons', $favicon, $fileName);
+
+            // Access the file via public URL
+            $favicon = 'storage/store/favicons/' . $fileName;
         } else {
             $favicon = null;
         }

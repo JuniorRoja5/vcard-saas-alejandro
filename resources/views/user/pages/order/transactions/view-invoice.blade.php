@@ -214,7 +214,7 @@
                         </table>
             
                         <!-- Notes Section -->
-                        <p class="mt-5"><strong>{{ __('Notes') }}</strong>:<br><span class="text-muted">{{ __('Payment from '. $transaction_details->payment_method) }}<br>{{ __('Transaction ID: ') }} {{ $transaction_details->payment_transaction_id }}</span></p>
+                        <p class="mt-5"><strong>{{ __('Notes') }}</strong>:<br><span class="text-muted">{{ __('Payment from ') }}{{ __($transaction_details->payment_method) }}<br>{{ __('Transaction ID: ') }} {{ $transaction_details->payment_transaction_id }}</span></p>
 
                         {{-- Footer --}}
                         <p class="text-center text-muted mt-5">

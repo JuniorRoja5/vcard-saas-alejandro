@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AdvancedSettingController extends Controller
 {
@@ -86,10 +87,14 @@ class AdvancedSettingController extends Controller
                 // Save favicon image
                 $favicon = $request->file('favicon');
 
-                // Upload favicon image
-                $favicon->move(public_path('storage/store/favicon'), $request->store_id . '.png');
+                // Unique file name
+                $fileName = uniqid() . '.png';
 
-                $favicon = "storage/store/favicons/" . $request->store_id . '.png';
+                // Store the file in storage/app/public/vcard/favicons
+                Storage::disk('public')->putFileAs('vcard/favicons', $favicon, $fileName);
+
+                // Access the file via public URL
+                $favicon = 'storage/vcard/favicons/' . $fileName;
             } else {
                 $favicon = null;
             }
@@ -102,12 +107,20 @@ class AdvancedSettingController extends Controller
                 'meta_keywords' => $metaKeywords,
             ];
 
+            // Check pwa enable/disable
+            if ($request->is_enable_pwa == "on") {
+                $request->is_enable_pwa = 1;
+            } else {
+                $request->is_enable_pwa = 0;
+            }
+
             // Update
             BusinessCard::where('card_id', $id)->update([
                 'password' => $request->password,
                 'custom_css' => $request->custom_css,
                 'custom_js' => $request->custom_js,
                 'seo_configurations' => json_encode($business_card->seo_configurations),
+                'is_enable_pwa' => $request->is_enable_pwa,
             ]);
 
             return redirect()->route('user.cards')->with('success', trans('Your virtual business card is updated!'));

@@ -603,12 +603,6 @@ Route::group(['middleware' => 'Installer'], function () {
         Route::get('create-card', [CreateController::class, 'CreateCard'])->name('create.card');
         Route::post('save-business-card', [CreateController::class, 'saveBusinessCard'])->name('save.business.card');
 
-        // Nueva interfaz unificada
-        Route::get('create-unified', [CreateController::class, 'createUnified'])->name('create.unified');
-        Route::get('load-tab/{tab}', [CreateController::class, 'loadTab'])->name('load.tab');
-        Route::post('save-tab/{tab}', [CreateController::class, 'saveTab'])->name('save.tab');
-        Route::get('view-preview/{id}', [CreateController::class, 'viewPreview'])->name('user.view.preview');
-
         // Search theme
         Route::get('search', [CardController::class, 'searchTheme'])->name('search.theme');
 
@@ -620,7 +614,7 @@ Route::group(['middleware' => 'Installer'], function () {
 
         // Social Links (Create)
         Route::get('social-links/{id}', [SocialLinkController::class, 'socialLinks'])->name('social.links');
-        Route::post('save-social-links/{id}', [SocialLinkController::class, 'saveSocialLinks'])->name('save.social.links');
+        Route::post('save-social-links/{id}', [SocialLinkController::class, 'saveSocialLinks'])->name('save.social.links')->withoutMiddleware(['scriptsanitizer']);
 
         // Payment links (Create)
         Route::get('payment-links/{id}', [PaymentLinkController::class, 'paymentLinks'])->name('payment.links');
@@ -682,7 +676,7 @@ Route::group(['middleware' => 'Installer'], function () {
 
         // Edit Social Links
         Route::get('edit-social-links/{id}', [EditSocialLinkController::class, 'socialLinks'])->name('edit.social.links');
-        Route::post('update-social-links/{id}', [EditSocialLinkController::class, 'updateSocialLinks'])->name('update.social.links');
+        Route::post('update-social-links/{id}', [EditSocialLinkController::class, 'updateSocialLinks'])->name('update.social.links')->withoutMiddleware(['scriptsanitizer']);
 
         // Edit Payment Links
         Route::get('edit-payment-links/{id}', [EditPaymentLinkController::class, 'paymentLinks'])->name('edit.payment.links');
@@ -1057,10 +1051,10 @@ Route::group(['middleware' => 'Installer'], function () {
         Route::get('{id}', [ProfileController::class, 'profile', 'ShareWidget'])->name('profile');
         Route::get('{id}/product/{product_id}', [ProfileController::class, 'profileSingleProduct', 'ShareWidget'])->name('profile.single-product');
         Route::get('{id}/categories', [ProfileController::class, 'profileCategories', 'profileCategories'])->name('profile.categories');
-
-        // Order place ajax
-        Route::post('order/place', [StoreOrderPlacedController::class, 'placeOrder'])->name('store.order.place');
     });
+
+    // Order place ajax
+    Route::post('order/place', [StoreOrderPlacedController::class, 'placeOrder'])->name('store.order.place');
 
     // Get day wise available time slots
     Route::post('get-available-time-slots', [BookAppointmentController::class, 'getAvailableTimeSlots'])->name('get.available.time.slots');

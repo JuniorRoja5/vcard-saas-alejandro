@@ -34,18 +34,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
-    /* Unsplash Modal Styles */
-    .unsplash-image {
-        border: 2px solid transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .unsplash-image:hover {
-        border-color: #007bff;
-        transform: scale(1.02);
-    }
 </style>
 @endsection
 
@@ -132,7 +120,7 @@
     <div class="modal-dialog modal-full-width modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <div class="modal-status bg-danger"></div>
+            <div class="modal-status"></div>
             <div class="modal-body text-center py-4">
                 <h3 class="mb-2">{{ __('Media Library') }}</h3>
                 <div class="text-muted mb-5">
@@ -152,108 +140,76 @@
     </div>
 </div>
 
-{{-- Unsplash Modal --}}
-<div class="modal fade" id="unsplashModal" tabindex="-1" aria-labelledby="unsplashModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="unsplashModalLabel">
-                    <i class="fas fa-search"></i> {{ __('Professional Images from Unsplash') }}
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <input type="text" id="unsplashQuery" class="form-control" placeholder="{{ __('Search for images...') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" id="searchUnsplash" class="btn btn-primary w-100">
-                            <i class="fas fa-search"></i> {{ __('Search') }}
-                        </button>
-                    </div>
-                </div>
-                <div id="unsplashLoading" class="text-center" style="display: none;">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">{{ __('Loading...') }}</span>
-                    </div>
-                </div>
-                <div class="row" id="unsplashResults"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- Custom JS --}}
 @push('custom-js')
 <script type="text/javascript" src="{{ asset('js/tom-select.base.min.js') }}"></script>
 <script>
     var count = 0;
     var currentSelection = 0;
-    
     function addService() {
-        "use strict";
-        if (count >= {{ $plan_details->no_of_services}}) {
-            new swal({
-                title: `{{ __('Oops!') }}`,
-                icon: 'warning',
-                text: `{{ __('You have reached your current plan limit.') }}`,
-                timer: 2000,
-                buttons: false,
-                showConfirmButton: false,
-            });
-        }
-        else {
-            count++;
-            var id = getRandomInt();
-            var services = `<div class='row' id=`+ id +`>
-                <div class='col-md-6 col-xl-6'>
-                    <div class='mb-3'>
-                        <label class='form-label required'>{{ __('Service Image') }}</label>
-                        <div class='input-group mb-2'>
-                            <input type='text' class='image`+ id +` media-model form-control' name='service_image[]' placeholder='{{ __('Service Image') }}' required>
-                            <button class='btn btn-primary btn-md' type='button' onclick='openMedia(`+ id +`)'>{{ __('Choose image') }}</button>
-                            <button type="button" class="btn btn-success btn-sm ml-2" onclick="openUnsplashModal(this, 'service')">
-                                <i class="fas fa-search"></i> Unsplash
-                            </button>
-                        </div>
+	"use strict";
+    if (count >= {{ $plan_details->no_of_services}}) {
+        new swal({
+            title: `{{ __('Oops!') }}`,
+            icon: 'warning',
+            text: `{{ __('You have reached your current plan limit.') }}`,
+            timer: 2000,
+            buttons: false,
+            showConfirmButton: false,
+        });
+    }
+    else {
+        count++;
+        var id = getRandomInt();
+        var services = `<div class='row' id=`+ id +`>
+            <div class='col-md-6 col-xl-6'>
+                <div class='mb-3'>
+                    <label class='form-label required'>{{ __('Service Image') }}</label>
+                    <div class='input-group mb-2'>
+                        <input type='text' class='image`+ id +` media-model form-control' name='service_image[]' placeholder='{{ __('Service Image') }}' required>
+                        <button class='btn btn-primary btn-md' type='button' onclick='openMedia(`+ id +`)'>{{ __('Choose image') }}</button>
                     </div>
                 </div>
-                
-                <div class='col-md-6 col-xl-6'>
-                    <div class='mb-3'> <label class='form-label required'>{{ __('Service Name') }}</label>
-                        <input type='text' class='form-control' name='service_name[]' placeholder='{{ __('Service Name') }}' required>
-                    </div>
+            </div>
+            
+            <div class='col-md-6 col-xl-6'>
+                <div class='mb-3'> <label class='form-label required'>{{ __('Service Name') }}</label>
+                    <input type='text' class='form-control' name='service_name[]' placeholder='{{ __('Service Name') }}' required>
                 </div>
-                
-                <div class='col-md-6 col-xl-6'>
-                    <div class='mb-3'> 
-                        <label class='form-label required'>{{ __('Service Description') }}</label>
-                        <input type='text' class='form-control' name='service_description[]' placeholder='{{ __('Service Description') }}' required>
-                    </div>
+            </div>
+            
+            <div class='col-md-6 col-xl-6'>
+                <div class='mb-3'> 
+                    <label class='form-label required'>{{ __('Service Description') }}</label>
+                    <input type='text' class='form-control' name='service_description[]' placeholder='{{ __('Service Description') }}' required>
                 </div>
-                
-                <div class='col-md-6 col-xl-6'>
-                    <div class='mb-3'>
-                        <label class='form-label' for='enquiry'>{{ __('Buy Now Button') }}</label>
-                        <div class="col-md-4">
-    <label class="form-label required">Price <span class="text-danger">*</span></label>
-    <input type="number" step="0.01" min="0" class="form-control" name="price[]" placeholder="19.99" required>
-    <input type="hidden" name="currency[]" value="USD">
-</div>
-                        
-                        <a href='#' class='btn mt-3 btn-danger btn-sm' onclick='removeService(`+id+`)'>{{ __('Remove') }}</a>
-                    </div>
-                    <br>
+            </div>
+            
+            <div class='col-md-6 col-xl-6'>
+                <div class='mb-3'>
+                    <label class='form-label' for='enquiry'>{{ __('Inquiry Button') }}</label>
+                    <select name='enquiry[]' id='enquiry' class='form-select enquiry' {{ $whatsAppNumberExists != true ? "disabled" : "" }} required>
+                        <option value='Enabled'>{{ __('Enabled') }}</option>
+                        <option value='Disabled' {{ $whatsAppNumberExists != true ? 'selected' : '' }}>{{ __('Disabled') }}</option>
+                    </select>
+
+                    {{-- Check whatsapp number exists --}}
+                    @if ($whatsAppNumberExists != true)
+                    <p class="h6">{{ __("'Inquiry button' is disabled as you have not entered whatsapp number. Go to the 'Social Links' page and enter the WhatsApp number.") }}</p>
+                    @endif
+                    
+                    <a href='#' class='btn mt-3 btn-danger btn-sm' onclick='removeService(`+id+`)'>{{ __('Remove') }}</a>
                 </div>
-            </div>`;
-            $("#more-services").append(services).html();
-        }
+                <br>
+            </div>
+        </div>`;
+        $("#more-services").append(services).html();
+    }
     }
 
     // Remove service
     function removeService(id) {
-        "use strict";
+	"use strict";
         $("#"+id).remove();
     }
 
@@ -261,7 +217,7 @@
     function getRandomInt() {
         min = Math.ceil(0);
         max = Math.floor(9999999999);
-        return Math.floor(Math.random() * (max - min) + min);
+        return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
     }
 
     // Open Media modal
@@ -270,116 +226,30 @@
         currentSelection = id;
         $('#openMediaModel').modal('show');
     }
-    
-    // Unsplash functionality
-    let targetInput = null;
-    
-    function openUnsplashModal(buttonElement, type) {
-        const inputGroup = buttonElement.closest('.input-group');
-        targetInput = inputGroup.querySelector('input[type="text"]');
-        
-        document.getElementById('unsplashQuery').value = '';
-        document.getElementById('unsplashResults').innerHTML = '';
-        
-        const modal = new bootstrap.Modal(document.getElementById('unsplashModal'));
-        modal.show();
-    }
-    
-    document.getElementById('searchUnsplash').addEventListener('click', searchUnsplash);
-    document.getElementById('unsplashQuery').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchUnsplash();
-        }
-    });
-    
-    function searchUnsplash() {
-        const query = document.getElementById('unsplashQuery').value.trim();
-        if (!query) return;
-        
-        document.getElementById('unsplashLoading').style.display = 'block';
-        document.getElementById('unsplashResults').innerHTML = '';
-        
-        fetch(`/user/search-unsplash-images?query=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('unsplashLoading').style.display = 'none';
-                
-                if (data.images && data.images.length > 0) {
-                    let html = '';
-                    data.images.forEach(function(img) {
-                        html += `
-                            <div class="col-md-3 col-sm-6 mb-3">
-                                <div class="card">
-                                    <img src="${img.thumb}" 
-                                         class="card-img-top unsplash-image" 
-                                         style="height: 200px; object-fit: cover; cursor: pointer;"
-                                         data-url="${img.regular}" 
-                                         alt="Unsplash Image">
-                                    <div class="card-footer p-2">
-                                        <small class="text-muted">Photo by ${img.photographer}</small>
-                                    </div>
-                                </div>
-                            </div>`;
-                    });
-                    document.getElementById('unsplashResults').innerHTML = html;
-
-                    // Add click events
-                    document.querySelectorAll('.unsplash-image').forEach(item => {
-                        item.addEventListener('click', function() {
-                            const imageUrl = this.getAttribute('data-url');
-
-                            // Visual feedback
-                            document.querySelectorAll('.unsplash-image').forEach(img => {
-                                img.style.borderColor = 'transparent';
-                            });
-                            this.style.borderColor = '#28a745';
-
-                            // Set image URL
-                            targetInput.value = imageUrl;
-
-                            // Close modal
-                            setTimeout(() => {
-                                bootstrap.Modal.getInstance(document.getElementById('unsplashModal')).hide();
-                                alert('✅ Professional image selected successfully!');
-                            }, 500);
-                        });
-                    });
-                } else {
-                    document.getElementById('unsplashResults').innerHTML = `
-                        <div class="col-12">
-                            <div class="text-center py-5">
-                                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No images found</h5>
-                                <p class="text-muted">Try different keywords</p>
-                            </div>
-                        </div>`;
-                }
-            })
-            .catch(error => {
-                document.getElementById('unsplashLoading').style.display = 'none';
-                document.getElementById('unsplashResults').innerHTML = `
-                    <div class="col-12">
-                        <div class="text-center py-5">
-                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                            <h5 class="text-danger">Error: ${error.message}</h5>
-                            <p class="text-muted">Please try again</p>
-                        </div>
-                    </div>`;
-            });
-    }
 </script>
-
 {{-- Upload image in dropzone --}}
 <script type="text/javascript">
+    // Default
+    $('#success').hide();
+    $('#failed').hide();
+
     Dropzone.options.dropzone = {
-            maxFilesize  : {{ env('SIZE_LIMIT')/1024 }},
-            acceptedFiles: ".jpeg,.jpg,.png,.gif",
-            init: function() {
-            this.on("success", function(file, response) {
+        maxFilesize: {{ env('SIZE_LIMIT') / 1024 }},
+        acceptedFiles: ".jpeg,.jpg,.png,.gif",
+        timeout: 180000,
+        success: function(file, response) { 
+            if(response.status == 'success') {
+                // Feature Request
+                // $('#success').show();
+                // $('#successMessage').html(`<span>`+response.message+`</span>`);
+                // window.location.href = `{{ route('user.media') }}`;
                 loadMedia();
-            });
+            } else {
+                $('#failed').show();
+                $('#failedMessage').html(`<span>`+response.message+`</span>`);
+            }
         }
-        };
+    };
 </script>
 
 {{-- Media with pagination --}}
@@ -448,7 +318,7 @@
         var mediaCardsHtml = '';
         mediaData.forEach(function (media) {
             mediaCardsHtml += `
-                <div class="col-md-2 mb-4">
+                <div class="col-6 col-lg-4 col-xl-2 mb-4">
                     <div class="card">
                         <img src="${media.base_url}${media.media_url}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${media.media_name}">
                         <div class="card-body">

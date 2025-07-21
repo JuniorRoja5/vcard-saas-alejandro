@@ -3,9 +3,9 @@
 
 @php
     // Number of enquiries
-    $enquiries = "<span class='text-danger'>Unlimited</span>";
+    $enquiries = "Unlimited";
     if ($plan_details->no_of_enquires != 999) {
-        $enquiries = "<span class='text-danger'>" . $plan_details->no_of_enquires . '</span>';
+        $enquiries = $plan_details->no_of_enquires;
     }
 @endphp
 
@@ -22,7 +22,7 @@
                         <h2 class="page-title">
                             {{ __('Enquiries') }}
                         </h2>
-                        <p class="mt-1"><strong>{!! __('Based on your subscription, you can find a maximum of ' . $enquiries . ' enquiries here.') !!}</strong></p>
+                        <p class="mt-1"><strong>{{ __('Based on your subscription, you can find a maximum of ') }}<span class="text-danger">{{ __($enquiries) }}</span>{{ __(' inquiries here.') }}</strong></p>
                     </div>
                 </div>
             </div>

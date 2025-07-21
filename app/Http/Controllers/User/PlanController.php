@@ -45,7 +45,7 @@ class PlanController extends Controller
         // Queries
         $plans = DB::table('plans')->where('is_private', 0)->where('status', 1)->get();
         $config = DB::table('config')->get();
-        $free_plan = Transaction::where('user_id', Auth::user()->id)->where('transaction_amount', '0')->count();
+        $free_plan = Transaction::where('user_id', Auth::user()->id)->where('transaction_amount', '0.00')->count();
         $plan = User::where('user_id', Auth::user()->user_id)->first();
         $active_plan = json_decode($plan->plan_details);
         $settings = Setting::where('status', 1)->first();

@@ -17,10 +17,11 @@ use App\Medias;
 use App\Setting;
 use App\BusinessCard;
 use App\StoreProduct;
+use App\StoreCategory;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Http\Controllers\Controller;
-use App\StoreCategory;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -74,20 +75,29 @@ class ProductController extends Controller
                         return __(asset($productImage[0]));
                     })
                     ->addColumn('product_name', function ($product) {
-                        if (strlen($product->product_name) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $product->product_name . ' ">' . substr($product->product_name, 0, 30) . '...</p>';
+                        $raw = $product->product_name ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
+
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return $product->product_name;
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('product_description', function ($product) {
-                        $rawSubtitle = strip_tags($product->product_description); // Remove HTML tags
-                        $cleanSubtitle = e($rawSubtitle); // Escape the cleaned text
+                        $raw = $product->product_description ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
 
-                        if (strlen($cleanSubtitle) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $cleanSubtitle . '">' . substr($cleanSubtitle, 0, 30) . '...</p>';
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return '<p>' . $cleanSubtitle . '</p>';
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('product_status', function ($product) {
@@ -122,7 +132,7 @@ class ProductController extends Controller
             }
 
             // Queries
-            $categories = StoreCategory::where('user_id', Auth::user()->user_id)->where('status', 1)->get();
+            $categories = StoreCategory::where('store_id', $id)->where('user_id', Auth::user()->user_id)->where('status', 1)->get();
             $media = Medias::where('user_id', Auth::user()->user_id)->orderBy('id', 'desc')->get();
             $settings = Setting::where('status', 1)->first();
 
@@ -136,12 +146,10 @@ class ProductController extends Controller
         // Validate the request data
         $validatedData = $request->validate([
             'product_category' => 'required|string', // Add appropriate validation rules
-            'product_badge' => 'required|string', // Add appropriate validation rules
             'product_image' => 'required|string', // Add appropriate validation rules
             'product_name' => 'required|string', // Add appropriate validation rules
             'product_short_description' => 'required|string', // Add appropriate validation rules
             'product_description' => 'required|string', // Add appropriate validation rules
-            'product_regular_price' => 'required', // Add appropriate validation rules
             'product_sales_price' => 'required', // Add appropriate validation rules
             'product_status' => 'required'
         ]);

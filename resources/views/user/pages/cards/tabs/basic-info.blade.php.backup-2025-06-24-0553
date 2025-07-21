@@ -1,0 +1,558 @@
+{{-- Basic Info Tab - Estructura Corregida --}}
+<div class="basic-info-tab">
+    {{-- Header del Tab --}}
+    <div class="tab-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h3 class="tab-title">⚙️ Basic Information</h3>
+                <p class="tab-subtitle text-muted">Set up the foundation of your {{ $card_type }} page</p>
+            </div>
+            <div class="tab-progress">
+                <div class="progress-circle">
+                    <span class="progress-text">1/6</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Formulario Principal --}}
+    <form id="basicInfoForm" class="modern-form">
+        @csrf
+        <input type="hidden" name="card_id" value="{{ $card_id ?? 'new' }}">
+        <input type="hidden" name="type" value="{{ $card_type }}">
+        
+        <div class="row g-4">
+            {{-- Columna Izquierda: Selector de Tema --}}
+            <div class="col-lg-4">
+                <div class="theme-selector-card">
+                    <div class="theme-header">
+                        <h5 class="theme-title">🎨 Choose Your Theme</h5>
+                        <p class="theme-subtitle">Pick a design that represents your style</p>
+                    </div>
+                    
+                    <div class="theme-preview-container">
+                        <div class="theme-preview">
+                            <img id="selectedThemePreview" 
+                                 src="{{ $card_type === 'business' ? asset('img/vCards/flowershop.png') : asset('img/vCards/personal-gray.png') }}"
+                                 class="theme-image" 
+                                 alt="Selected theme preview">
+                        </div>
+                        
+                        <button type="button" 
+                                class="btn btn-theme-selector" 
+                                onclick="openThemeModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="m12 1l3 6l6 3l-6 3l-3 6l-3 -6l-6 -3l6 -3z"/>
+                            </svg>
+                            Browse Themes
+                        </button>
+                        
+                        <input type="hidden" name="theme_id" id="selectedThemeId" 
+                               value="{{ $card_type === 'business' ? '588969111146' : '588969111014' }}">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Columna Derecha: Formulario Completo --}}
+            <div class="col-lg-8">
+                <div class="form-fields-container">
+                    <div class="row g-3">
+                        {{-- Cover Upload --}}
+                        <div class="col-md-6">
+                            <div class="mb-3" id="coverChooser">
+                                <div class="form-label required">{{ __('Cover') }}</div>
+                                <div class="upload-buttons-row">
+                                    {{-- Upload from device --}}
+                                    <div class="upload-option">
+                                        <input type="file" class="form-control" id="cover" name="cover_file"
+                                               placeholder="{{ __('Cover') }}" accept=".jpeg,.jpg,.png,.gif,.svg" />
+                                        <small class="text-muted">{{ __('Upload from device') }}</small>
+                                    </div>
+                                    {{-- Unsplash option --}}
+                                    <div class="upload-option">
+                                        <button type="button" class="btn btn-primary w-100" onclick="openCoverUnsplashModal()">
+                                            <i class="fas fa-image me-1"></i>{{ __('Unsplash') }}
+                                        </button>
+                                        <small class="text-muted">{{ __('Professional images') }}</small>
+                                        <input type="hidden" class="form-control" name="cover">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Logo Upload --}}
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-label required">{{ __('Logo') }}</div>
+                                <input type="file" class="form-control" id="logo" placeholder="{{ __('Logo') }}"
+                                       accept=".jpeg,.jpg,.png,.gif,.svg" required />
+                                <input type="hidden" class="form-control" name="logo">
+                                <small class="text-muted">{{ __('Your profile picture or logo') }}</small>
+                            </div>
+                        </div>
+
+                        {{-- Cover Preview --}}
+                        <div class="col-md-6 d-none" id="coverNone">
+                            <div class="preview-container">
+                                <label class="form-label">{{ __('Cover Preview') }}</label>
+                                <span class="avatar avatar-xl w-100 me-3" id="coverPreview" style="background-position: center; border-radius:8px; min-height: 120px;"></span>
+                            </div>
+                        </div>
+
+                        {{-- Logo Preview --}}
+                        <div class="col-md-6 d-none" id="logoNone">
+                            <div class="preview-container">
+                                <label class="form-label">{{ __('Logo Preview') }}</label>
+                                <span class="avatar avatar-xl w-100 me-3" id="logoPreview" style="background-size: contain; background-position: center; border-radius:8px; min-height: 120px;"></span>
+                            </div>
+                        </div>
+
+                        {{-- Language Selection --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label required" for="card_lang">{{ __('Language') }}</label>
+                                <select name="card_lang" id="card_lang" class="form-control" required>
+                                    @foreach(config('app.languages') as $langLocale => $langName)
+                                    <option value="{{ $langLocale }}" {{ $langLocale == config('app.locale') ? 'selected' : '' }}>
+                                        {{ $langName }} ({{ strtoupper($langLocale) }})
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        {{-- Title --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label required" for="title">
+                                    {{ $card_type === 'business' ? __('Business Name') : __('Your Name') }}
+                                </label>
+                                <input type="text" class="form-control" name="title" id="title" 
+                                       placeholder="{{ $card_type === 'business' ? 'Enter your business name' : 'Enter your name' }}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        {{-- Subtitle --}}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label required" for="subtitle">{{ __('Sub Title') }}</label>
+                                <input type="text" class="form-control" name="subtitle" id="subtitle" 
+                                       placeholder="{{ $card_type === 'business' ? 'e.g., Premium Coffee Shop' : 'e.g., Web Developer' }}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        {{-- Description --}}
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label required" for="description">{{ __('Description') }}</label>
+                                <textarea class="form-control" name="description" id="description" rows="4" 
+                                          placeholder="{{ $card_type === 'business' ? 'About your business' : 'Tell people about yourself' }}" required></textarea>
+                            </div>
+                        </div>
+                        
+                        {{-- Hidden Fields --}}
+                        <input type="hidden" name="cover_type" value="photo">
+                    </div>
+
+                    {{-- Status Indicators --}}
+                    <div class="completion-status mt-4">
+                        <div class="status-item">
+                            <div class="status-icon completed">✓</div>
+                            <span>Theme selected</span>
+                        </div>
+                        <div class="status-item" id="nameStatus">
+                            <div class="status-icon pending">○</div>
+                            <span>Name required</span>
+                        </div>
+                        <div class="status-item completed">
+                            <div class="status-icon completed">✓</div>
+                            <span>Language set</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Action Buttons --}}
+        <div class="tab-actions mt-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="action-info">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Progress saved automatically
+                    </small>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="saveCurrentTab()">
+                        💾 Save Draft
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="continueToNext()">
+                        Continue
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <line x1="12" y1="5" x2="19" y2="12"/>
+                            <line x1="12" y1="19" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{{-- ESTILOS CORREGIDOS --}}
+<style>
+/* Basic Info Tab Styles */
+.basic-info-tab {
+    padding: 0;
+}
+
+/* Header del Tab */
+.tab-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    margin-bottom: 32px;
+}
+
+.tab-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+}
+
+.tab-subtitle {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+}
+
+.progress-circle {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.progress-text {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+}
+
+/* Containers */
+.theme-selector-card,
+.form-fields-container {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f3f4;
+    height: 100%;
+}
+
+/* Theme Selector */
+.theme-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.theme-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+.theme-subtitle {
+    color: #6b7280;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.theme-preview-container {
+    text-align: center;
+}
+
+.theme-preview {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.theme-image {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-theme-selector {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-theme-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    color: white;
+}
+
+/* Upload Buttons */
+.upload-buttons-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.upload-option {
+    flex: 1;
+}
+
+.upload-option input[type="file"] {
+    margin-bottom: 4px;
+}
+
+.upload-option .btn {
+    margin-bottom: 4px;
+}
+
+/* Preview Containers */
+.preview-container {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    border: 2px dashed #d1d5db;
+    text-align: center;
+}
+
+.preview-container .form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #ef4444;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Status Indicators */
+.completion-status {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    margin-top: 24px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+}
+
+.status-item:last-child {
+    margin-bottom: 0;
+}
+
+.status-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-icon.completed {
+    background: #10b981;
+    color: white;
+}
+
+.status-icon.pending {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 2px solid #d1d5db;
+}
+
+/* Action Buttons */
+.tab-actions {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    margin-top: 24px;
+}
+
+.action-info {
+    display: flex;
+    align-items: center;
+}
+
+.action-buttons .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-buttons .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tab-header {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .theme-selector-card,
+    .form-fields-container {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .upload-buttons-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .tab-actions {
+        text-align: center;
+    }
+    
+    .action-buttons {
+        margin-top: 16px;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+</style>
+
+{{-- JavaScript para manejo de archivos --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle cover file upload
+    document.getElementById('cover').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('coverPreview').style.backgroundImage = `url(${e.target.result})`;
+                document.getElementById('coverPreview').style.backgroundSize = 'cover';
+                document.getElementById('coverNone').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle logo file upload
+    document.getElementById('logo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('logoPreview').style.backgroundImage = `url(${e.target.result})`;
+                document.getElementById('logoPreview').style.backgroundSize = 'contain';
+                document.getElementById('logoNone').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Monitor name input for status
+    const titleInput = document.getElementById('title');
+    const nameStatus = document.getElementById('nameStatus');
+    
+    if (titleInput && nameStatus) {
+        titleInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            const statusIcon = nameStatus.querySelector('.status-icon');
+            const statusText = nameStatus.querySelector('span');
+            
+            if (value.length > 0) {
+                statusIcon.classList.remove('pending');
+                statusIcon.classList.add('completed');
+                statusIcon.textContent = '✓';
+                statusText.textContent = 'Name completed';
+            } else {
+                statusIcon.classList.remove('completed');
+                statusIcon.classList.add('pending');
+                statusIcon.textContent = '○';
+                statusText.textContent = 'Name required';
+            }
+        });
+    }
+});
+
+// Placeholder functions for missing functionality
+function openCoverUnsplashModal() {
+    alert('Unsplash modal functionality will be implemented');
+}
+
+function continueToNext() {
+    alert('Continue functionality will be implemented');
+}
+</script>

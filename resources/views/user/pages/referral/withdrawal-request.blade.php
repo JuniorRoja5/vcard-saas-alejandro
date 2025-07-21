@@ -69,7 +69,7 @@
                                                 <div class="col-sm-12 col-lg-12">
                                                     <div class="form-group">
                                                         <label
-                                                            class="form-label">{{ __('Bank Details / Paypal Email Address / UPI') }}</label>
+                                                            class="form-label">{{ __('Bank Details / Paypal Email Address') }}</label>
                                                         <textarea name="bank_details" class="form-control" id="bank_details" rows="5">{{ $bankDetails }}</textarea>
                                                     </div>
                                                 </div>

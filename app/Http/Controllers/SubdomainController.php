@@ -138,11 +138,38 @@ class SubdomainController extends Controller
 
                     if ($business_card_details) {
                         $products = StoreProduct::join('store_categories', 'store_products.category_id', '=', 'store_categories.category_id')
-                            ->where('store_products.card_id', $card_details->card_id)
-                            ->where('store_categories.user_id', $business_card_details->user_id)
-                            ->where('store_products.product_status', 'instock')
-                            ->where('store_categories.status', 1)
-                            ->select('store_products.*', 'store_categories.category_name', 'store_categories.thumbnail', 'store_categories.category_id');
+                        ->where('store_products.card_id', $card_details->card_id)
+                        ->where('store_categories.user_id', $business_card_details->user_id)
+                        ->where('store_products.product_status', 'instock')
+                        ->where('store_categories.status', 1)
+                        ->select(
+                            'store_products.id',
+                            'store_products.product_id',
+                            'store_products.product_name',
+                            'store_products.product_image',
+                            'store_products.product_short_description',
+                            'store_products.regular_price',
+                            'store_products.sales_price',
+                            'store_products.badge',
+                            'store_products.product_status',
+                            'store_categories.category_name',
+                            'store_categories.thumbnail',
+                            'store_categories.category_id'
+                        )
+                        ->groupBy(
+                            'store_products.id',
+                            'store_products.product_id',
+                            'store_products.product_name',
+                            'store_products.product_image',
+                            'store_products.product_short_description',
+                            'store_products.regular_price',
+                            'store_products.sales_price',
+                            'store_products.badge',
+                            'store_products.product_status',
+                            'store_categories.category_name',
+                            'store_categories.thumbnail',
+                            'store_categories.category_id'
+                        );
 
                         // Filter: Price Range
                         if ($request->filled('min') && $request->filled('max')) {
@@ -190,7 +217,7 @@ class SubdomainController extends Controller
 
                         // Get categories
                         $getCategories = DB::table('store_products')->select('category_id')->groupBy('category_id')->where('card_id', $card_details->card_id)->where('user_id', $business_card_details->user_id);
-                        $categories    = StoreCategory::whereIn('category_id', $getCategories)->get();
+                        $categories    = StoreCategory::where('store_id', $card_details->card_id)->get();
 
                         $settings = Setting::where('status', 1)->first();
                         $config   = DB::table('config')->get();
@@ -308,7 +335,7 @@ class SubdomainController extends Controller
                         $currency = Currency::where('iso_code', $currency)->first();
                         $currency = $currency->symbol;
 
-                        $url           = URL::to('/') . "/" . strtolower(preg_replace('/\s+/', '-', $card_details->card_url));
+                        $url           = URL::to('/');
                         $business_name = $card_details->title;
                         $profile       = URL::to('/') . "/" . $business_card_details->cover;
 
@@ -327,7 +354,7 @@ class SubdomainController extends Controller
                         $url          = urlencode($url);
                         $shareContent = urlencode($shareContent);
 
-                        // Session::put('locale', strtolower($business_card_details->card_lang));
+                        Session::put('locale', strtolower($business_card_details->card_lang));
                         app()->setLocale(Session::get('locale'));
 
                         $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -505,7 +532,7 @@ class SubdomainController extends Controller
 
                         $plan_details = json_decode($business_card_details->plan_details, true);
 
-                        $url           = URL::to('/') . "/" . strtolower(preg_replace('/\s+/', '-', $card_details->card_url));
+                        $url           = URL::to('/');
                         $business_name = $card_details->title;
                         $profile       = URL::to('/') . "/" . $business_card_details->cover;
 
@@ -523,7 +550,7 @@ class SubdomainController extends Controller
                         $url          = urlencode($url);
                         $shareContent = urlencode($shareContent);
 
-                        // Session::put('locale', strtolower($business_card_details->card_lang));
+                        Session::put('locale', strtolower($business_card_details->card_lang));
                         app()->setLocale(Session::get('locale'));
 
                         $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -579,7 +606,7 @@ class SubdomainController extends Controller
         ];
 
         foreach ($fill['icons'] as $size => $file) {
-            $fileInfo = pathinfo((string) $file['path']);
+            $fileInfo = pathinfo($file['path']);
             $basicManifest['icons'][] = [
                 'src' => $file['path'],
                 'type' => 'image/' . $fileInfo['extension'],
@@ -592,7 +619,7 @@ class SubdomainController extends Controller
             foreach ($fill['shortcuts'] as $shortcut) {
 
                 if (array_key_exists("icons", $shortcut)) {
-                    $fileInfo = pathinfo((string) $shortcut['icons']['src']);
+                    $fileInfo = pathinfo($shortcut['icons']['src']);
                     $icon = [
                         'src' => $shortcut['icons']['src'],
                         'type' => 'image/' . $fileInfo['extension'],

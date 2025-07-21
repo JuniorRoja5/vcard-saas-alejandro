@@ -19,6 +19,7 @@ use App\Currency;
 use App\BusinessCard;
 use App\VcardProduct;
 use App\BusinessField;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
@@ -63,17 +64,29 @@ class ProductController extends Controller
                         return __(asset($product->product_image));
                     })
                     ->addColumn('product_name', function ($product) {
-                        if (strlen($product->product_name) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $product->product_name . ' ">' . substr($product->product_name, 0, 30) . '...</p>';
+                        $raw = $product->product_name ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
+
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return $product->product_name;
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('product_description', function ($product) {
-                        if (strlen($product->product_description) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $product->product_description . ' ">' . substr($product->product_description, 0, 30) . '...</p>';
+                        $raw = $product->product_description ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
+
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return $product->product_description;
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('product_status', function ($product) {

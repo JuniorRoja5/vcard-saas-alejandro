@@ -112,7 +112,34 @@ class ProfileController extends Controller
                             ->where('store_categories.user_id', $business_card_details->user_id)
                             ->where('store_products.product_status', 'instock')
                             ->where('store_categories.status', 1)
-                            ->select('store_products.*', 'store_categories.category_name', 'store_categories.thumbnail', 'store_categories.category_id');
+                            ->select(
+                                'store_products.id',
+                                'store_products.product_id',
+                                'store_products.product_name',
+                                'store_products.product_image',
+                                'store_products.product_short_description',
+                                'store_products.regular_price',
+                                'store_products.sales_price',
+                                'store_products.badge',
+                                'store_products.product_status',
+                                'store_categories.category_name',
+                                'store_categories.thumbnail',
+                                'store_categories.category_id'
+                            )
+                            ->groupBy(
+                                'store_products.id',
+                                'store_products.product_id',
+                                'store_products.product_name',
+                                'store_products.product_image',
+                                'store_products.product_short_description',
+                                'store_products.regular_price',
+                                'store_products.sales_price',
+                                'store_products.badge',
+                                'store_products.product_status',
+                                'store_categories.category_name',
+                                'store_categories.thumbnail',
+                                'store_categories.category_id'
+                            );
 
                         // Filter: Price Range
                         if ($request->filled('min') && $request->filled('max')) {
@@ -160,7 +187,7 @@ class ProfileController extends Controller
 
                         // Get categories
                         $getCategories = DB::table('store_products')->select('category_id')->groupBy('category_id')->where('card_id', $card_details->card_id)->where('user_id', $business_card_details->user_id);
-                        $categories    = StoreCategory::whereIn('category_id', $getCategories)->get();
+                        $categories    = StoreCategory::where('store_id', $card_details->card_id)->get();
 
                         $settings = Setting::where('status', 1)->first();
                         $config   = DB::table('config')->get();
@@ -297,7 +324,7 @@ class ProfileController extends Controller
                         $url          = urlencode($url);
                         $shareContent = urlencode($shareContent);
 
-                        // Session::put('locale', strtolower($business_card_details->card_lang));
+                        Session::put('locale', strtolower($business_card_details->card_lang));
                         app()->setLocale(Session::get('locale'));
 
                         $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -493,7 +520,7 @@ class ProfileController extends Controller
                         $url          = urlencode($url);
                         $shareContent = urlencode($shareContent);
 
-                        // Session::put('locale', strtolower($business_card_details->card_lang));
+                        Session::put('locale', strtolower($business_card_details->card_lang));
                         app()->setLocale(Session::get('locale'));
 
                         $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -606,7 +633,7 @@ class ProfileController extends Controller
             $url          = urlencode($url);
             $shareContent = urlencode($shareContent);
 
-            // Session::put('locale', strtolower($business_card_details->card_lang));
+            Session::put('locale', strtolower($business_card_details->card_lang));
             app()->setLocale(Session::get('locale'));
 
             $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -639,7 +666,7 @@ class ProfileController extends Controller
 
         if ($business_card_details) {
             // Categories
-            $categories = DB::table('store_categories')->where('store_id', $card_details->card_id)->where('user_id', $business_card_details->user_id)->where('status', 1)->get();
+            $categories = StoreCategory::where('store_id', $card_details->card_id)->where('user_id', $business_card_details->user_id)->where('status', 1)->get();
 
             $settings = Setting::where('status', 1)->first();
             $config   = DB::table('config')->get();
@@ -701,7 +728,7 @@ class ProfileController extends Controller
             $url          = urlencode($url);
             $shareContent = urlencode($shareContent);
 
-            // Session::put('locale', strtolower($business_card_details->card_lang));
+            Session::put('locale', strtolower($business_card_details->card_lang));
             app()->setLocale(Session::get('locale'));
 
             $qr_url = "https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=" . $url;
@@ -915,8 +942,7 @@ class ProfileController extends Controller
         ];
 
         foreach ($fill['icons'] as $size => $file) {
-            $path = is_object($file['path']) ? (string) $file['path']->to('') : $file['path'];
-            $fileInfo                 = pathinfo($path);
+            $fileInfo                 = pathinfo($file['path']);
             $basicManifest['icons'][] = [
                 'src'     => $file['path'],
                 'type'    => 'image/' . $fileInfo['extension'],
@@ -929,8 +955,7 @@ class ProfileController extends Controller
             foreach ($fill['shortcuts'] as $shortcut) {
 
                 if (array_key_exists("icons", $shortcut)) {
-                    $iconPath = is_object($shortcut['icons']['src']) ? 'default-icon.png' : $shortcut['icons']['src'];
-                    $fileInfo = pathinfo($iconPath);
+                    $fileInfo = pathinfo($shortcut['icons']['src']);
                     $icon     = [
                         'src'     => $shortcut['icons']['src'],
                         'type'    => 'image/' . $fileInfo['extension'],

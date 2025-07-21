@@ -4,13 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $card_details->title }}</title>
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @if(isset($business_card_details->seo_configurations) && json_decode($business_card_details->seo_configurations)->favicon != null)
+        <link rel="icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}">
+    @else
+        <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @endif
 
     <meta name="theme-color" content="#EFFAF4" />
 
@@ -96,7 +100,7 @@
 
     {{-- Check PWA --}}
     @if ($plan_details != null)
-        @if ($plan_details['pwa'] == 1)
+        @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
             @laravelPWA
 
             <!-- Web Application Manifest -->
@@ -410,12 +414,12 @@
                                                             {{ __('Price:') }}
                                                             <span
                                                                 class="text-gray-500 font-medium">
-                                                                {{ formatCurrency($product_detail->sales_price) }}</span>
+                                                                {{ formatCurrencyVcard($product_detail->sales_price, $product_detail->currency) }}</span>
                                                             {{-- Check regular price is exists --}}
                                                             @if ($product_detail->sales_price != $product_detail->regular_price)
                                                                 <span
                                                                     class="line-through ml-2 text-gray-500 text-base">
-                                                                    {{ formatCurrency($product_detail->regular_price) }}</span>
+                                                                    {{ formatCurrencyVcard($product_detail->regular_price, $product_detail->currency) }}</span>
                                                             @endif
                                                         </h4>
                                                     </div>
@@ -936,7 +940,7 @@
                                             </div>
                                                     
                                             {{-- ReCaptcha --}}
-                                            @include('templates.includes.recaptcha')
+                                            @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-one'])
 
                                         </div>
                                         <!-- Submit Button -->
@@ -1149,7 +1153,7 @@
                     </div>
 
                     {{-- ReCaptcha --}}
-                    @include('templates.includes.recaptcha')
+                    @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-two'])
 
                     <!-- Submit and Close Buttons -->
                     <div class="flex justify-between">
@@ -1255,7 +1259,7 @@
                 <!-- Submit Button -->
                 <div class="flex justify-center">
                     <button id="download"
-                        onclick="downloadQr('{{ route('dynamic.card', $business_card_details->card_id) }}', 500)"
+                        onclick="downloadQr('{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}', 500)"
                         class="bg-orange-500 border border-orange-600 font-bold p-3 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1330,7 +1334,7 @@
         <!-- Include PWA modal -->
         @if ($plan_details != null)
             {{-- Check PWA --}}
-            @if ($plan_details['pwa'] == 1)
+            @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
                 @include('vendor.laravelpwa.new_pwa_modal', [
                     'primary_color' => 'orange',
                     'img' => $business_card_details->profile,
@@ -1532,35 +1536,49 @@
                     },
                     body: JSON.stringify(formData)
                 })
-                .then(data => {
-                    // Handle success or error response from the server
-                    if (data.status == 200) {
-                        // Reset the form fields
+                .then(async response => {
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Success
                         document.getElementById('email').value = "";
                         document.getElementById('phone').value = "";
                         document.getElementById('name').value = "";
                         document.getElementById('notes').value = "";
                         document.getElementById('price').value = "";
 
-                        // Get available time slots in Send data to Laravel route using fetch API
+                        // Reset appointment-date and time-slot-select
+                        document.getElementById('appointment-date').value = "";
+                        document.getElementById('time-slot-select').value = "";
+
+                        // Get available time slots again
                         generateOption("", "");
 
-                        successMessage.classList.remove('hidden'); // Hide any previous success message
-                        toggleModal(); // Close the modal on success
-
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = "{{ __('Book Appointment') }}";
+                        successMessage.classList.remove('hidden');
+                        errorSubmitMessage.classList.add('hidden');
+                        toggleModal();
 
                     } else {
-                        // If either field is empty, show an success message
-                        errorSubmitMessage.classList.remove('hidden');
-                        toggleModal(); // Close the modal on error
+                        // Handle Laravel validation errors or custom response
+                        if (data.errors) {
+                            console.error('Validation Errors:', data.errors);
+                        }
 
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = "{{ __('Book Appointment') }}";
+                        successMessage.classList.add('hidden');
+
+                        errorSubmitMessage.classList.remove('hidden');
+                        errorSubmitMessage.innerHTML = data.message || 'Something went wrong';
+                        toggleModal();
                     }
+
+                    button.disabled = false;
+                    button.innerHTML = `{{ __('Book Appointment') }}`;
+                })
+                .catch(error => {
+                    toggleModal();
+
+                    button.disabled = false;
+                    button.innerHTML = `{{ __('Book Appointment') }}`;
                 });
         });
     </script>
@@ -1605,7 +1623,7 @@
         // Generate QR Code and place in shareQrCode using qrious
         const qr = new QRious({
             element: document.getElementById('shareQrCode'),
-            value: `{{ route('dynamic.card', $business_card_details->card_id) }}`, // Laravel route
+            value: `{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`, // Laravel route
             size: 200,
             background: 'white', // Background color
             foreground: 'black', // Foreground (QR code) color
@@ -1640,7 +1658,7 @@
         window.onload = function() {
             "use strict";
 
-            updateQr(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            updateQr(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
         };
 
         // Copy Link
@@ -1648,7 +1666,7 @@
             "use strict";
 
             // From browser url to clipboard
-            navigator.clipboard.writeText(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            navigator.clipboard.writeText(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
             alert("Link copied to clipboard!");
         }
 

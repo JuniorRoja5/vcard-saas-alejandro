@@ -48,7 +48,7 @@ class InquiryController extends Controller
         $plan_details = json_decode($plan->plan_details);
 
         // Enquiries
-        $businessEnquries = ContactForm::where('card_id', $id)->limit($plan_details->no_of_enquires)->orderBy('id', 'desc')->get();
+        $businessEnquries = ContactForm::where('card_id', $id)->limit($plan_details->no_of_enquires)->orderBy('id', 'asc')->get();
 
         return view('user.pages.cards.enquiries', compact('businessEnquries', 'settings', 'plan_details'));
     }

@@ -4,13 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $card_details->title }}</title>
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @if(isset($business_card_details->seo_configurations) && json_decode($business_card_details->seo_configurations)->favicon != null)
+        <link rel="icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}">
+    @else
+        <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @endif
 
     <meta name="theme-color" content="#60A5FA" />
 
@@ -77,7 +81,7 @@
 
     {{-- Check PWA --}}
     @if ($plan_details != null)
-        @if ($plan_details['pwa'] == 1)
+        @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
             @laravelPWA
 
             <!-- Web Application Manifest -->
@@ -501,12 +505,12 @@
                                                             <h4 class="text-[#121212] text-md font-bold">
                                                                 {{ __('Price:') }}<span
                                                                     class="text-gray-500 font-bold ml-1">
-                                                                    {{ formatCurrency($product_detail->sales_price) }}</span>
+                                                                    {{ formatCurrencyVcard($product_detail->sales_price, $product_detail->currency) }}</span>
                                                                 {{-- Check regular price is exists --}}
                                                                 @if ($product_detail->sales_price != $product_detail->regular_price)
                                                                     <span
                                                                         class="line-through ml-2 text-gray-500 text-base font-normal">
-                                                                        {{ formatCurrency($product_detail->regular_price) }}</span>
+                                                                        {{ formatCurrencyVcard($product_detail->regular_price, $product_detail->currency) }}</span>
                                                                 @endif
                                                             </h4>
                                                         </div>
@@ -977,7 +981,7 @@
                                             </div>
                                             
                                             {{-- ReCaptcha --}}
-                                            @include('templates.includes.recaptcha')
+                                            @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-one'])
 
                                         </div>
 
@@ -1160,7 +1164,7 @@
                             </div>
 
                             {{-- ReCaptcha --}}
-                    @include('templates.includes.recaptcha')
+                            @include('templates.includes.recaptcha', ['recaptchaId' => 'recaptcha-two'])
 
                             <!-- Submit and Close Buttons -->
                             <div class="flex justify-between">
@@ -1266,7 +1270,7 @@
                         <!-- Submit Button -->
                         <div class="flex justify-center">
                             <button
-                                onclick="downloadQr('{{ route('dynamic.card', $business_card_details->card_id) }}', 500)"
+                                onclick="downloadQr('{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}', 500)"
                                 id="download" class="bg-blue-100 border border-blue-200 font-bold p-3 rounded-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1344,7 +1348,7 @@
     <!-- Include PWA modal -->
     @if ($plan_details != null)
     {{-- Check PWA --}}
-    @if ($plan_details['pwa'] == 1)
+    @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
         @include('vendor.laravelpwa.new_pwa_modal', [
             'primary_color' => 'blue',
             'img' => $business_card_details->profile
@@ -1445,34 +1449,48 @@
             }
         }
 
-        // Handle form submission
+        /// Store reCAPTCHA widget instances globally
+        window.recaptchaWidgets = {};
+
+        // Callback once reCAPTCHA script is loaded
+        function onloadCallback() {
+            // Explicitly render reCAPTCHA and assign to widget map
+            window.recaptchaWidgets['recaptcha-one'] = grecaptcha.render('recaptcha-one', {
+                'sitekey': '{{ env('RECAPTCHA_SITE_KEY') }}'
+            });
+
+            // You can render another one like this if needed:
+            window.recaptchaWidgets['recaptcha-two'] = grecaptcha.render('recaptcha-two', {
+                'sitekey': '{{ env('RECAPTCHA_SITE_KEY') }}'
+            });
+        }
+
+        // Handle appointment form submission
         document.getElementById('appointmentForm').addEventListener('submit', function(event) {
             "use strict";
 
             event.preventDefault();
 
-            // Get the button element
             const button = document.getElementById('bookAppointmentButton');
+            const errorSubmitMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
 
-            // Disable the button and show loader
+            // Show loader on button
             button.disabled = true;
             button.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-loader animate-spin h-5 w-5 text-white inline-block mr-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M12 6l0 -3" />
-                <path d="M16.25 7.75l2.15 -2.15" />
-                <path d="M18 12l3 0" />
-                <path d="M16.25 16.25l2.15 2.15" />
-                <path d="M12 18l0 3" />
-                <path d="M7.75 16.25l-2.15 2.15" />
-                <path d="M6 12l-3 0" />
-                <path d="M7.75 7.75l-2.15 -2.15" />
-            </svg>
-            {{ __('Booking...') }}
-        `;
-
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-loader animate-spin h-5 w-5 text-white inline-block mr-2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M12 6l0 -3" />
+                    <path d="M16.25 7.75l2.15 -2.15" />
+                    <path d="M18 12l3 0" />
+                    <path d="M16.25 16.25l2.15 2.15" />
+                    <path d="M12 18l0 3" />
+                    <path d="M7.75 16.25l-2.15 2.15" />
+                    <path d="M6 12l-3 0" />
+                    <path d="M7.75 7.75l-2.15 -2.15" />
+                </svg>
+                {{ __('Booking...') }}
+            `;
 
             // Gather form data
             const formData = {
@@ -1486,49 +1504,67 @@
                 card: `{{ $business_card_details->card_id }}`
             };
 
-            // Conditionally add reCAPTCHA response
+            // Add reCAPTCHA response if enabled
             @if(env('RECAPTCHA_ENABLE') == 'on')
-                formData.g_recaptcha_response = grecaptcha.getResponse();
+                formData.g_recaptcha_response = grecaptcha.getResponse(window.recaptchaWidgets['recaptcha-one']);
+
+                if (!formData.g_recaptcha_response) {
+                    // Try second reCAPTCHA widget
+                    formData.g_recaptcha_response = grecaptcha.getResponse(window.recaptchaWidgets['recaptcha-two']);
+                }
             @endif
 
-            // Send data to Laravel route using fetch API
+            // Send data via fetch
             fetch("{{ route('book.appointment') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include CSRF token for security
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(data => {
-                    // Handle success or error response from the server
-                    if (data.status == 200) {
-                        // Reset the form fields
-                        document.getElementById('email').value = "";
-                        document.getElementById('phone').value = "";
-                        document.getElementById('name').value = "";
-                        document.getElementById('notes').value = "";
-                        document.getElementById('price').value = "";
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(async response => {
+                const data = await response.json();
 
-                        // Get available time slots in Send data to Laravel route using fetch API
-                        generateOption("", "");
+                if (response.ok) {
+                    // Reset form
+                    ['name', 'email', 'phone', 'notes', 'appointment-date', 'time-slot-select', 'price'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
 
-                        successMessage.classList.remove('hidden'); // Hide any previous success message
-                        toggleModal(); // Close the modal on success
+                    generateOption("", "");
 
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = `{{ __('Book Appointment') }}`;
-                    } else {
-                        // If either field is empty, show an success message
-                        errorSubmitMessage.classList.remove('hidden');
-                        toggleModal(); // Close the modal on error
+                    successMessage.classList.remove('hidden');
+                    errorSubmitMessage.classList.add('hidden');
 
-                        // Re-enable the button and revert its content
-                        button.disabled = false;
-                        button.innerHTML = `{{ __('Book Appointment') }}`;
+                    // Reset reCAPTCHA
+                    @if(env('RECAPTCHA_ENABLE') == 'on')
+                        grecaptcha.reset(window.recaptchaWidgets['recaptcha-one']);
+                    @endif
+
+                    toggleModal();
+                } else {
+                    if (data.errors) {
+                        console.error('Validation Errors:', data.errors);
                     }
-                });
+
+                    successMessage.classList.add('hidden');
+                    errorSubmitMessage.classList.remove('hidden');
+                    errorSubmitMessage.innerHTML = data.message || 'Something went wrong';
+
+                    toggleModal();
+                }
+
+                button.disabled = false;
+                button.innerHTML = `{{ __('Book Appointment') }}`;
+            })
+            .catch(error => {
+                console.error('Request failed:', error);
+                toggleModal();
+
+                button.disabled = false;
+                button.innerHTML = `{{ __('Book Appointment') }}`;
+            });
         });
     </script>
     <script>
@@ -1573,7 +1609,7 @@
         // Generate QR Code and place in shareQrCode using qrious
         const qr = new QRious({
             element: document.getElementById('shareQrCode'),
-            value: `{{ route('dynamic.card', $business_card_details->card_id) }}`,
+            value: `{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`,
             size: 200,
             background: 'white', // Background color
             foreground: 'black', // Foreground (QR code) color
@@ -1603,7 +1639,7 @@
             "use strict";
 
             // From browser url to clipboard
-            navigator.clipboard.writeText(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            navigator.clipboard.writeText(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
             alert("Link copied to clipboard!");
         }
 
@@ -1620,7 +1656,7 @@
         window.onload = function() {
             "use strict";
 
-            updateQr(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            updateQr(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
         };
 
         // Function to send WhatsApp message

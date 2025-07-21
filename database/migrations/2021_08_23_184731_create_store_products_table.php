@@ -28,12 +28,12 @@ class CreateStoreProductsTable extends Migration
             $table->string('card_id')->uniqid();
             $table->string('product_id')->uniqid();
             $table->string('category_id')->nullable();
-            $table->longText('badge');
+            $table->longText('badge')->nullable();
             $table->longText('product_image');
             $table->longText('product_name');
             $table->text('product_short_description')->nullable();
             $table->text('product_description')->nullable();
-            $table->string('regular_price');
+            $table->string('regular_price')->nullable();
             $table->string('sales_price');
             $table->string('product_status');
             $table->string('status')->default(1);

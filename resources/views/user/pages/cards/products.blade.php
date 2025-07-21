@@ -118,7 +118,7 @@
     <div class="modal-dialog modal-full-width modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <div class="modal-status bg-danger"></div>
+            <div class="modal-status"></div>
             <div class="modal-body text-center py-4">
                 <h3 class="mb-2">{{ __('Media Library') }}</h3>
                 <div class="text-muted mb-5">
@@ -146,7 +146,7 @@
     var count = 0;
     var currentSelection = 0;
     function addProduct() {
-"use strict";
+	"use strict";
     if (count>={{ $plan_details->no_of_vcard_products }}) {
         new swal({
             title: `{{ __('Oops!') }}`,
@@ -186,9 +186,8 @@
                 <div class='mb-3'>
                     <label class='form-label required'>{{ __('Product Image') }}</label>
                     <div class='input-group mb-2'>
-                        <input type='text' class="image${id} media-model form-control" name='product_image[]' placeholder='{{ __('Product Image') }}' required>
-                        <button class='btn btn-primary btn-md' type='button' onclick='openMedia(${id})'>{{ __('Choose image') }}</button>
-                              <button class='btn btn-success btn-md ms-2' type='button' onclick='openProductUnsplashModal(${id})'>Unsplash</button>
+                        <input type='text' class='image`+ id +` media-model form-control' name='product_image[]' placeholder='{{ __('Product Image') }}' required>
+                        <button class='btn btn-primary btn-md' type='button' onclick='openMedia(`+ id +`)'>{{ __('Choose image') }}</button>
                     </div>
                 </div>
             </div>
@@ -203,7 +202,7 @@
             <div class='col-md-6 col-xl-6'>
                 <div class='mb-3'>
                     <label class='form-label required'>{{ __('Product Sub Title') }}</label>
-                    <textarea class='form-control' name='product_subtitle[]' data-bs-toggle='autosize' placeholder='{{ __('Product Sub Title') }}...' required></textarea>
+                    <textarea class='form-control' name='product_description[]' data-bs-toggle='autosize' placeholder='{{ __('Product Sub Title') }}...' required></textarea>
                 </div>
             </div>
             
@@ -222,6 +221,20 @@
             </div>
             
             <div class='col-md-6 col-xl-6'>
+                <div class='mb-3'>
+                    <label class='form-label required' for='product_status'>{{ __('Status') }}</label>
+                    <select name='product_status[]' id='product_status' class='form-control product_status' {{ $whatsAppNumberExists != true ? "disabled" : "" }} required>
+                        <option value='instock'>{{ __('In Stock') }}</option>
+                        <option value='outstock' {{ $whatsAppNumberExists != true ? "selected" : "" }}>{{ __('Out of Stock') }}</option>
+                    </select>
+
+                    {{-- Check whatsapp number exists --}}
+                    @if ($whatsAppNumberExists != true)
+                        <p class="h6">{{ __("'Inquiry button' is disabled as you have not entered whatsapp number. Go to the 'Social Links' page and enter the WhatsApp number.") }}</p>
+                    @endif
+
+                    <a href='#' class='btn mt-3 btn-danger btn-sm' onclick='removeProduct(`+id+`)'>{{ __('Remove') }}</a>
+                </div>
             </div>
             </div>
             <br>
@@ -234,7 +247,7 @@
 
     // Remove products
     function removeProduct(id) {
-"use strict";
+	"use strict";
         $("#"+id).remove();
     }
 
@@ -254,15 +267,27 @@
 </script>
 {{-- Upload image in dropzone --}}
 <script type="text/javascript">
+    // Default
+    $('#success').hide();
+    $('#failed').hide();
+
     Dropzone.options.dropzone = {
-            maxFilesize  : {{ env('SIZE_LIMIT')/1024 }},
-            acceptedFiles: ".jpeg,.jpg,.png,.gif",
-            init: function() {
-            this.on("success", function(file, response) {
+        maxFilesize: {{ env('SIZE_LIMIT') / 1024 }},
+        acceptedFiles: ".jpeg,.jpg,.png,.gif",
+        timeout: 180000,
+        success: function(file, response) { 
+            if(response.status == 'success') {
+                // Feature Request
+                // $('#success').show();
+                // $('#successMessage').html(`<span>`+response.message+`</span>`);
+                // window.location.href = `{{ route('user.media') }}`;
                 loadMedia();
-            });
+            } else {
+                $('#failed').show();
+                $('#failedMessage').html(`<span>`+response.message+`</span>`);
+            }
         }
-        };
+    };
 </script>
 
 {{-- Media with pagination --}}
@@ -331,7 +356,7 @@
         var mediaCardsHtml = '';
         mediaData.forEach(function (media) {
             mediaCardsHtml += `
-                <div class="col-md-2 mb-4">
+                <div class="col-6 col-lg-4 col-xl-2 mb-4">
                     <div class="card">
                         <img src="${media.base_url}${media.media_url}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${media.media_name}">
                         <div class="card-body">
@@ -341,7 +366,7 @@
                                     stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                     <rect x="8" y="8" width="12" height="12" rx="2"></rect>
-                                    <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 2 2v8a2 2 0 0 0 2 2h2"></path>
+                                    <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
                                 </svg>
                             </a>
                         </div>
@@ -442,7 +467,7 @@
 
 <script>
     // Array of element selectors
-    var elementSelectors = ['.currency'];
+    var elementSelectors = ['.currency', '.product_status'];
 
     // Function to initialize TomSelect on an element
     function initializeTomSelect(el) {
@@ -512,54 +537,5 @@
     // Configure the observer
     observer.observe(document.body, { childList: true, subtree: true });
 </script>
-<!-- BEGIN Unsplash Modal -->
-<div class="modal fade" id="productUnsplashModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Busca una imagen en Unsplash</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="product-unsplash-search" class="d-flex mb-3">
-          <input type="text" name="query" class="form-control me-2" placeholder="palabra clave…" required>
-          <button class="btn btn-primary" type="submit">Buscar</button>
-        </form>
-        <div id="product-unsplash-gallery" class="row g-3"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-let currentProd=null;
-function openProductUnsplashModal(i){
-  currentProd=i;
-  $('#productUnsplashModal').modal('show');
-  $('#product-unsplash-search input[name="query"]').val('').focus();
-  $('#product-unsplash-gallery').empty();
-}
-$('#product-unsplash-search').on('submit',function(e){
-  e.preventDefault();
-  const q=$(this).find('input[name="query"]').val().trim();
-  if(!q) return;
-  $('#product-unsplash-gallery').html('<p class="text-center">Cargando…</p>');
-  $.get('{{ route("user.search.unsplash.images") }}',{query:q},function(r){
-    let h='';
-    $.each(r.images,function(_,img){
-      h+='<div class="col-md-3"><img src="'+img.thumb+'" data-full="'+img.regular+'" alt="'+img.alt+'" class="img-fluid rounded" style="cursor:pointer"></div>';
-    });
-    $('#product-unsplash-gallery').html(h);
-  });
-});
-$(document).on('click','#product-unsplash-gallery img',function(){
-  const url=$(this).data('full');
-  const alt=$(this).attr('alt');
-  const blk=$('#'+currentProd);
-  blk.find('input[name="product_image[]"]').val(url);
-  blk.find('.preview-img').attr('src',url).attr('alt',alt);
-  $('#productUnsplashModal').modal('hide');
-});
-</script>
-<!-- END Unsplash Modal -->
 @endpush
 @endsection

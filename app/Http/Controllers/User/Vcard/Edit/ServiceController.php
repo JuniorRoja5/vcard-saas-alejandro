@@ -18,6 +18,7 @@ use App\Setting;
 use Carbon\Carbon;
 use App\BusinessCard;
 use App\BusinessField;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Http\Controllers\Controller;
@@ -60,17 +61,29 @@ class ServiceController extends Controller
                         return __(asset($service->service_image));
                     })
                     ->addColumn('service_name', function ($service) {
-                        if (strlen($service->service_name) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $service->service_name . ' ">' . substr($service->service_name, 0, 30) . '...</p>';
+                        $raw = $service->service_name ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
+
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return $service->service_name;
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('service_description', function ($service) {
-                        if (strlen($service->service_description) > 30) {
-                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . $service->service_description . ' ">' . substr($service->service_description, 0, 30) . '...</p>';
+                        $raw = $service->service_description ?? '';
+                        $clean = strip_tags($raw);
+                        $utf8 = mb_convert_encoding($clean, 'UTF-8', 'UTF-8'); // fix malformed utf-8
+
+                        $short = Str::limit(e($utf8), 30);
+
+                        if (Str::length($utf8) > 30) {
+                            return '<p data-bs-toggle="tooltip" data-bs-placement="top" title="' . e($utf8) . '">' . $short . '</p>';
                         } else {
-                            return $service->service_description;
+                            return '<p>' . $short . '</p>';
                         }
                     })
                     ->addColumn('service_enquiry', function ($service) {

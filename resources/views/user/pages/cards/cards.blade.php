@@ -9,71 +9,6 @@
             -webkit-overflow-scrolling: touch;
         }
     }
-
-    /* AÑADIR ESTO - CSS Moderno */
-    .modern-card {
-        transition: all 0.3s ease;
-        border: 1px solid #dee2e6;
-        border-radius: 12px;
-    }
-
-    .modern-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        border-color: #007bff;
-    }
-
-    .modern-card .card-body {
-        padding: 1.5rem;
-    }
-
-    [data-bs-theme="dark"] .modern-card {
-        background-color: #1a1d29;
-        border-color: #2d3748;
-    }
-
-    [data-bs-theme="dark"] .modern-card:hover {
-        box-shadow: 0 8px 25px rgba(255,255,255,0.1);
-    }
-
-    /* Ocultar tabla en pantallas grandes */
-    @media (min-width: 768px) {
-        #businessCardsTable_wrapper {
-            display: none !important;
-        }
-    }
-
-    .modern-card .dropdown-toggle {
-        border: 1px solid #dee2e6 !important;
-        background: white !important;
-        color: #495057 !important;
-        font-size: 14px !important;
-    }
-
-    .modern-card .dropdown-toggle:hover {
-        background: #f8f9fa !important;
-        border-color: #007bff !important;
-    }
-
-    .modern-card .dropdown-toggle:focus {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-    }
-
-    [data-bs-theme="dark"] .modern-card .dropdown-toggle {
-        background: var(--tblr-dark) !important;
-        border-color: var(--tblr-border-color-dark) !important;
-        color: var(--tblr-body-color) !important;
-    }
-
-    [data-bs-theme="dark"] .modern-card .dropdown-toggle:hover {
-        background: var(--tblr-gray-800) !important;
-        border-color: var(--tblr-primary) !important;
-    }
-
-    .modern-card .dropdown-menu {
-        width: 100% !important;
-        font-size: 14px !important;
-    }
 </style>
 @endsection
 
@@ -102,29 +37,13 @@
                                     <line x1="12" y1="5" x2="12" y2="19" />
                                     <line x1="5" y1="12" x2="19" y2="12" />
                                 </svg>
-                                <span class="d-lg-inline d-none">{{ __('+ Add Page') }}</span>
+                                <span class="d-lg-inline d-none">{{ __('Create new vcard') }}</span>
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container-fluid mb-4">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center py-4">
-                <h3 class="text-white mb-3">{{ __('Create Your Next Page') }}</h3>
-                <p class="text-white-75 mb-3">{{ __('Get started with a new page in seconds') }}</p>
-                <a href="{{ route('user.choose.card.type') }}" class="btn btn-white btn-lg px-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    {{ __('Create New Page') }}
-                </a>
-            </div>
-        </div>
-    </div>
         <div class="page-body">
             <div class="container-fluid">
                 {{-- Failed --}}
@@ -152,40 +71,33 @@
                 @endif
 
                 <div class="row row-deck row-cards">
-    <div class="col-sm-12 col-lg-12">
-        <!-- Grid Moderno de Tarjetas (FUERA del card-table) -->
-        <div class="container-fluid">
-            <div class="row" id="cardsGrid">
-                <!-- Las tarjetas se cargarán aquí dinámicamente -->
-            </div>
-    </div>
-        
-        <!-- Card con tabla oculta -->
-        <div class="card card-table">
-            {{-- Business Cards --}}
-            <!-- Tabla oculta para mantener DataTable funcionando -->
-            <div style="display: none;">
-                <table id="businessCardsTable">
-                    <thead>
-                        <tr>
-                            <th>{{ __('#') }}</th>
-                            <th class="">{{ __('Date') }}</th>
-                            <th>{{ __('Type') }}</th>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Views') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th class="w-1"></th>
-                        </tr>
-                    </thead>
-                </table>
-                <div id="cardView" class="mobile-cards p-3"></div>
-                <div class="d-flex justify-content-center">
-                    <div id="cardPagination" class="pagination-container"></div>
+                    <div class="col-sm-12 col-lg-12">
+                        <div class="card card-table">
+                            {{-- Business Cards --}}
+                            <div class="table-responsive">
+                                <table class="table table-vcenter display" id="businessCardsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('#') }}</th>
+                                            <th class="">{{ __('Date') }}</th>
+                                            <th>{{ __('Type') }}</th>
+                                            <th>{{ __('Name') }}</th>
+                                            <th>{{ __('Views') }}</th>
+                                            <th>{{ __('Status') }}</th>
+                                            <th class="w-1"></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <div id="cardView" class="mobile-cards p-3"></div>
+                                <div class="d-flex justify-content-center">
+                                    <div id="cardPagination" class="pagination-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
         {{-- Footer --}}
         @include('user.includes.footer')
@@ -193,10 +105,10 @@
 
     {{-- Delete Modal --}}
     <div class="modal modal-blur fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-status bg-danger"></div>
+                <div class="modal-status"></div>
                 <div class="modal-body text-center py-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -232,10 +144,10 @@
 
     {{-- Open QR Modal --}}
     <div class="modal modal-blur fade" id="openQR" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-status bg-danger"></div>
+                <div class="modal-status"></div>
                 <div class="modal-body text-center py-4">
                     <h3 class="mb-5">{{ __('Scan QR') }}</h3>
                     <div id="status_message" class="qr-code"></div>
@@ -246,10 +158,10 @@
 
     {{-- Delete --}}
     <div class="modal modal-blur fade" id="forceDeleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-status bg-danger"></div>
+                <div class="modal-status"></div>
                 <div class="modal-body text-center py-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -284,10 +196,10 @@
 
     {{-- Duplicate Card Modal --}}
     <div class="modal modal-blur fade" id="duplicateModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-status bg-danger"></div>
+                <div class="modal-status"></div>
                 <div class="modal-body text-center py-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -478,70 +390,9 @@
                 }
             }
 
-            // GRID MODERNO - EN EL LUGAR CORRECTO
-            table.on('draw', function() {
-                const data = table.data();
-                $('#cardsGrid').empty();
-                
-                data.each(function(row) {
-                    const cardHtml = createModernCard(row);
-                    $('#cardsGrid').append(cardHtml);
-                });
-            });
-
-            // Forzar primer render
-            setTimeout(function() {
-                table.ajax.reload();
-            }, 500);
-
             // Run toggleCardView on page load and window resize
             $(window).resize(toggleCardView);
         });
-
-        function createModernCard(data) {
-            const isActive = data.card_status === 'activated';
-            const statusBadge = isActive ? 
-                '<span class="badge bg-success">Publicado</span>' : 
-                '<span class="badge bg-warning">Borrador</span>';
-            
-            const typeDisplay = data.type === 'business' ? 'NEGOCIO' : 'PERSONAL';
-            const typeColor = data.type === 'business' ? 'bg-blue' : 'bg-green';
-            
-            return `
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card modern-card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge ${typeColor} text-white">${typeDisplay}</span>
-                                ${statusBadge}
-                            </div>
-                            
-                            <h4 class="card-title mb-2">${data.title}</h4>
-                            <p class="text-muted small mb-3">${data.created_at}</p>
-                            
-                            <div class="row g-2 mb-4">
-                                <div class="col-4 text-center">
-                                    <div class="text-primary fw-bold">${data.views || 0}</div>
-                                    <small class="text-muted">Vistas</small>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <div class="text-success fw-bold">$0</div>
-                                    <small class="text-muted">Ventas</small>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <div class="text-info fw-bold">0</div>
-                                    <small class="text-muted">Enlaces</small>
-                                </div>
-                            </div>
-                            
-                            <div class="dropdown-center w-100">
-                            ${data.action.replace('btn-group', 'btn-group w-100').replace('dropdown-toggle', 'dropdown-toggle w-100')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
         // Duplicate card
         function duplicateCard(id, type) {

@@ -4,13 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $card_details->title }}</title>
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
-    <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @if(isset($business_card_details->seo_configurations) && json_decode($business_card_details->seo_configurations)->favicon != null)
+        <link rel="icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url(json_decode($business_card_details->seo_configurations)->favicon) }}">
+    @else
+        <link rel="icon" href="{{ url($business_card_details->profile) }}" sizes="512x512" type="image/png" />
+        <link rel="apple-touch-icon" href="{{ url($business_card_details->profile) }}">
+    @endif
 
     <meta name="theme-color" content="yellow" />
 
@@ -66,7 +70,7 @@
 
     {{-- Check PWA --}}
     @if ($plan_details != null)
-        @if ($plan_details['pwa'] == 1)
+        @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
             @laravelPWA
 
             <!-- Web Application Manifest -->
@@ -294,11 +298,11 @@
                                                 <h4 class="text-sm mb-3 font-bold text-dark"><span
                                                         id="{{ $product_detail->product_id }}_currency"></span>
                                                     <span
-                                                        id="{{ $product_detail->product_id }}_price">{{ formatCurrency($product_detail->sales_price) }}</span>
+                                                        id="{{ $product_detail->product_id }}_price">{{ formatCurrencyVcard($product_detail->sales_price, $product_detail->currency) }}</span>
                                                     @if ($product_detail->sales_price != $product_detail->regular_price)
                                                         <span class="text-xs line-through text-red-500 font-bold">
                                                             
-                                                            {{ formatCurrency($product_detail->regular_price) }}</span>
+                                                            {{ formatCurrencyVcard($product_detail->regular_price, $product_detail->currency) }}</span>
                                                     @endif
                                                 </h4>
                                                 @if ($enquiry_button != null)
@@ -916,7 +920,7 @@
                         <div class="modal-content py-4 text-left px-6">
                             <div class="justify-between items-center px-6 mb-3 qr-code"></div>
                             <a id="download"
-                                onclick="downloadQr('{{ route('dynamic.card', $business_card_details->card_id) }}', 500)"
+                                onclick="downloadQr('{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}', 500)"
                                 class="cursor-pointer flex justify-center items-center content-center bg-gradient-to-br from-yellow-300 to-yellow-800 shadow-md hover:shadow-lg h-16 w-16 rounded-full fill-current text-white qr-code-download">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -940,7 +944,7 @@
     <!-- Include PWA modal -->
     @if ($plan_details != null)
         {{-- Check PWA --}}
-        @if ($plan_details['pwa'] == 1)
+        @if ($plan_details['pwa'] == 1 && $business_card_details->is_enable_pwa == 1)
             @include('vendor.laravelpwa.pwa_modal')
         @endif
     @endif
@@ -1138,6 +1142,13 @@
                         errorSubmitMessage.classList.remove('hidden');
                         toggleModal(); // Close the modal on error
                     }
+
+                    // Reset appointment-date and time-slot-select
+                    document.getElementById('appointment-date').value = "";
+                    document.getElementById('time-slot-select').value = "";
+
+                    // Get available time slots in Send data to Laravel route using fetch API
+                    generateOption("", "");
                 });
             });
         </script>
@@ -1206,7 +1217,7 @@
         window.onload = function() {
             "use strict";
 
-            updateQr(`{{ route('dynamic.card', $business_card_details->card_id) }}`);
+            updateQr(`{{ config('app.url') . route('dynamic.card', $business_card_details->card_id, false) }}`);
         };
     </script>
     <script>

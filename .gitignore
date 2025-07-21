@@ -1,82 +1,10 @@
-# Laravel
 /node_modules
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
-.env
 .env.backup
-.env.local
-.env.production
 .phpunit.result.cache
-docker-compose.override.yml
 Homestead.json
 Homestead.yaml
-auth.json
 npm-debug.log
 yarn-error.log
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-__MACOSX/
-
-# Logs
-storage/logs/*.log
-storage/logs/laravel.log*
-
-# Cache
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-bootstrap/cache/*
-
-# User uploads
-public/uploads/*
-storage/app/public/*
-
-# Database
-*.sqlite
-*.sqlite3
-storage/app/database*
-
-# Backups
-storage/app/backups/*
-*.backup*
-*.bak*
-
-# Temporary files
-*.tmp
-*.temp
-php_errorlog
-
-# Development files
-*.py
-*.txt
-*.php.bak
-temp_modal.txt
-new_*.txt
-fix_*.php
-add_*.php
-getServicesData_method.php
-update_checkout_webhook.php
-complete_*.py
-audit_*.py
-remove_*.py
-
-# Migration files in root
-2025_*.php
-
-# Weird files
-'Basic Info,'
-'[title'
-'er);q'
-required_in_instock,outofstock,
-true]]

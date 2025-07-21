@@ -142,7 +142,7 @@ class CheckOutController extends Controller
                         return redirect()->route('user.plans')->with('success', trans('Hurray! Your FREE plan has been activated.'));
                     }
                 } elseif($selected_plan->trial != 0 && Auth::user()->trial != 1) {
-                    // Generate invoice details
+                        // Generate invoice details
                         $invoice_details = [];
 
                         $invoice_details['from_billing_name'] = $config[16]->config_value;
@@ -178,7 +178,7 @@ class CheckOutController extends Controller
                         $transaction->user_id = Auth::user()->id;
                         $transaction->plan_id = $selected_plan->plan_id;
                         $transaction->desciption = $selected_plan->plan_name . " Plan";
-                        $transaction->payment_gateway_name = "FREE";
+                        $transaction->payment_gateway_name = "TRIAL";
                         $transaction->transaction_amount = $selected_plan->plan_price;
                         $transaction->transaction_currency = $config[1]->config_value;
                         $transaction->invoice_details = json_encode($invoice_details);
@@ -187,10 +187,11 @@ class CheckOutController extends Controller
 
                         // Update user plan
                         $selected_plan_validity = (int) $selected_plan->validity;
+                        $trialDays = (int) $selected_plan->trial;
 
                         // Add new plan validity
                         $plan_validity = Carbon::now();
-                        $plan_validity->addDays($selected_plan->trial);
+                        $plan_validity->addDays($trialDays);
 
                         // Update validity in user
                         User::where('user_id', Auth::user()->user_id)->update([

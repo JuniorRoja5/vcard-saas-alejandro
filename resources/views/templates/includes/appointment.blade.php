@@ -76,7 +76,7 @@
             </div>
 
             {{-- ReCaptcha --}}
-            @include('templates.includes.recaptcha')
+            @include('templates.includes.recaptcha') 
             
             <!-- Submit and Close Buttons -->
             <div class="flex justify-end space-x-4">

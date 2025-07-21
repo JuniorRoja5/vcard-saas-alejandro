@@ -1,5 +1,15 @@
 <?php
 
+/*
+ |--------------------------------------------------------------------------
+ | GoBiz vCard SaaS
+ |--------------------------------------------------------------------------
+ | Developed by NativeCode © 2021 - https://nativecode.in
+ | All rights reserved
+ | Unauthorized distribution is prohibited
+ |--------------------------------------------------------------------------
+*/
+
 namespace App\Http\Controllers\User;
 
 use App\Plan;
@@ -59,44 +69,15 @@ class ReferralController extends Controller
             // Minimum Withdrawal Amount
             $minWithdrawalAmount = $config[83]->config_value;
 
-            // NUEVO: Earnings por tipo
-            $referralEarnings = Referral::where('is_registered', 1)
-                ->where('is_subscribed', 1)
-                ->where('referred_user_id', Auth::user()->user_id)
-                ->where('earning_type', 'referral')
-                ->get();
+            // Referral Amount
+            $earnings = Referral::where('is_registered', 1)->where('is_subscribed', 1)->where('referred_user_id', Auth::user()->user_id)->get();
 
-            $productSales = Referral::where('is_registered', 1)
-                ->where('is_subscribed', 1)
-                ->where('user_id', Auth::user()->user_id)
-                ->where('earning_type', 'product_sale')
-                ->get();
-
-            $serviceSales = Referral::where('is_registered', 1)
-                ->where('is_subscribed', 1)
-                ->where('user_id', Auth::user()->user_id)
-                ->where('earning_type', 'service_sale')
-                ->get();
-
-            // Calcular totales por tipo
-            $totalReferrals = 0;
-            foreach ($referralEarnings as $earning) {
-                $totalReferrals += (float) json_decode($earning->referral_scheme)->referral_amount;
-            }
-
-            $totalProducts = 0;
-            foreach ($productSales as $earning) {
-                $totalProducts += (float) json_decode($earning->referral_scheme)->referral_amount;
-            }
-
-            $totalServices = 0;
-            foreach ($serviceSales as $earning) {
-                $totalServices += (float) json_decode($earning->referral_scheme)->referral_amount;
-            }
-
-            // Total general (compatible con código original)
-            $overAllEarning = $totalReferrals + $totalProducts + $totalServices;
+            // Default Earning
+            $overAllEarning = 0;
             $currentBalance = 0;
+            foreach ($earnings as $earning) {
+                $overAllEarning += (float) json_decode($earning->referral_scheme)->referral_amount;
+            }
 
             // Withdrawals
             $withdrawals = ReferralWithdrawRequest::where('payment_status', 2)->where('user_id', Auth::user()->user_id)->sum('amount');
@@ -166,7 +147,7 @@ class ReferralController extends Controller
                     ->make(true);
             }
 
-            return view('user.pages.referral.index', compact('referralUrl', 'minWithdrawalAmount', 'overAllEarning', 'currentBalance', 'settings', 'config', 'symbol', 'referralEarnings', 'productSales', 'serviceSales', 'totalReferrals', 'totalProducts', 'totalServices'));
+            return view('user.pages.referral.index', compact('referralUrl', 'minWithdrawalAmount', 'overAllEarning', 'currentBalance', 'settings', 'config', 'symbol'));
         } else {
             return redirect()->route('user.plans');
         }
@@ -295,44 +276,15 @@ class ReferralController extends Controller
         // Minimum Withdrawal Amount
         $minWithdrawalAmount = $config[83]->config_value;
 
-        // ALL EARNINGS (referrals + product sales + service sales)
-        $referralEarnings = Referral::where('earning_type', 'referral')
-            ->where('is_registered', 1)
-            ->where('is_subscribed', 1) 
-            ->where('referred_user_id', Auth::user()->user_id)
-            ->get();
-            
-        $productSales = Referral::where('earning_type', 'product_sale')
-            ->where('is_registered', 1)
-            ->where('is_subscribed', 1)
-            ->where('user_id', Auth::user()->user_id)
-            ->get();
-            
-        $serviceSales = Referral::where('earning_type', 'service_sale')
-            ->where('is_registered', 1)
-            ->where('is_subscribed', 1)
-            ->where('user_id', Auth::user()->user_id)
-            ->get();
+        // Referral Amount
+        $earnings = Referral::where('is_registered', 1)->where('is_subscribed', 1)->where('referred_user_id', Auth::user()->user_id)->get();
 
-        // Calculate totals (same logic as dashboard)
-        $totalReferrals = 0;
-        foreach ($referralEarnings as $earning) {
-            $totalReferrals += (float) json_decode($earning->referral_scheme)->referral_amount;
-        }
-        
-        $totalProducts = 0;
-        foreach ($productSales as $earning) {
-            $totalProducts += (float) json_decode($earning->referral_scheme)->referral_amount;
-        }
-        
-        $totalServices = 0;
-        foreach ($serviceSales as $earning) {
-            $totalServices += (float) json_decode($earning->referral_scheme)->referral_amount;
-        }
-        
-        // Total general (same as dashboard)
-        $overAllEarning = $totalReferrals + $totalProducts + $totalServices;
+        // Default Earning
+        $overAllEarning = 0;
         $currentBalance = 0;
+        foreach ($earnings as $earning) {
+            $overAllEarning += (float) json_decode($earning->referral_scheme)->referral_amount;
+        }
 
         // Withdrawals
         $withdrawals = ReferralWithdrawRequest::where('payment_status', 2)->where('user_id', Auth::user()->user_id)->sum('amount');

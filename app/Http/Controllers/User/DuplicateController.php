@@ -24,8 +24,11 @@ use App\BusinessHour;
 use App\StoreProduct;
 use App\VcardProduct;
 use App\BusinessField;
+use App\StoreCategory;
 use App\InformationPop;
+use App\StoreBusinessHour;
 use Illuminate\Support\Str;
+use App\CardAppointmentTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -70,15 +73,23 @@ class DuplicateController extends Controller
         $plan_details = json_decode($plan->plan_details);
 
         // No of cards to created
-        $cards = BusinessCard::where('user_id', Auth::user()->user_id)->where('card_type', 'vcard')->where('card_status', 'activated')->count();
+        $cards = BusinessCard::where('user_id', Auth::user()->user_id)->where('card_type', $type)->where('card_status', 'activated')->count();
 
         // Check unlimited cards
-        if ($plan_details->no_of_vcards == 999) {
-            $no_cards = 999999;
+        if ($type == 'vcard') {
+            if ($plan_details->no_of_vcards == 999) {
+                $no_cards = 999999;
+            } else {
+                $no_cards = $plan_details->no_of_vcards;
+            }
         } else {
-            $no_cards = $plan_details->no_of_vcards;
+            if ($plan_details->no_of_stores == 999) {
+                $no_cards = 999999;
+            } else {
+                $no_cards = $plan_details->no_of_stores;
+            }
         }
-
+ 
         // Chech vcard creation limit
         if ($cards < $no_cards) {
             // Queries
@@ -112,10 +123,13 @@ class DuplicateController extends Controller
             $duplicateCard->appointment_receive_email = $businessCard->appointment_receive_email;
             $duplicateCard->is_newsletter_pop_active = $businessCard->is_newsletter_pop_active;
             $duplicateCard->is_info_pop_active = $businessCard->is_info_pop_active;
+            $duplicateCard->custom_styles = $businessCard->custom_styles;
             $duplicateCard->custom_css = $businessCard->custom_css;
             $duplicateCard->custom_js = $businessCard->custom_js;
             $duplicateCard->password = $businessCard->password;
             $duplicateCard->expiry_time = $businessCard->expiry_time;
+            $duplicateCard->delivery_options = $businessCard->delivery_options;
+            $duplicateCard->seo_configurations = $businessCard->seo_configurations;
             $duplicateCard->card_status = 'activated';
             $duplicateCard->status = 1;
             $duplicateCard->save();
@@ -285,50 +299,60 @@ class DuplicateController extends Controller
                     }
                 }
 
-                // Duplicate contact forms
-                $contactForms = ContactForm::where('card_id', $id)->get();
-                foreach ($contactForms as $contactForm) {
+                // Duplicate card appointments
+                $appointments = CardAppointmentTime::where('card_id', $id)->get();
+                foreach ($appointments as $appointment) {
                     try {
-                        // Save contact form
-                        $duplicateContactForm = new ContactForm();
-                        $duplicateContactForm->contact_form_id = uniqid();
-                        $duplicateContactForm->card_id = $duplicateCard->card_id;
-                        $duplicateContactForm->user_id = $contactForm->user_id;
-                        $duplicateContactForm->name = $contactForm->name;
-                        $duplicateContactForm->email = $contactForm->email;
-                        $duplicateContactForm->phone = $contactForm->phone;
-                        $duplicateContactForm->message = $contactForm->message;
-                        $duplicateContactForm->status = 1;
-                        $duplicateContactForm->save();
+                        // Save appointment
+                        $duplicateAppointment = new CardAppointmentTime();
+                        $duplicateAppointment->card_appointment_time_id = uniqid();
+                        $duplicateAppointment->card_id = $duplicateCard->card_id;
+                        $duplicateAppointment->day = $appointment->day;
+                        $duplicateAppointment->slot_duration = $appointment->slot_duration;
+                        $duplicateAppointment->time_slots = $appointment->time_slots;
+                        $duplicateAppointment->price = $appointment->price;
+                        $duplicateAppointment->status = 1;
+                        $duplicateAppointment->save();
                     } catch (\Exception $e) {
                     }
                 }
             } else {
-                // Product category
-                $categories = Category::where('user_id', $businessCard->user_id)->get();
+                // Product store category
+                $categories = StoreCategory::where('store_id', $id)->get();
+                $categoryIdMap = []; // Store original -> new category_id
+
                 foreach ($categories as $category) {
                     try {
-                        // Save category
-                        $category = new Category();
-                        $category->user_id = $categories->user_id;
-                        $category->category_id = uniqid();
-                        $category->thumbnail = $category->thumbnail;
-                        $category->category_name = $category->category_name;
-                        $category->status = 1;
-                        $category->save();
+                        // Save store category
+                        $newCategoryId = uniqid(); // Generate new ID once
+                        $duplicateCategory = new StoreCategory();
+                        $duplicateCategory->user_id = $category->user_id ?? '';
+                        $duplicateCategory->store_id = $duplicateCard->card_id;
+                        $duplicateCategory->category_id = $newCategoryId;
+                        $duplicateCategory->thumbnail = $category->thumbnail ?? '';
+                        $duplicateCategory->category_name = $category->category_name ?? '';
+                        $duplicateCategory->status = 1;
+                        $duplicateCategory->save();
+
+                        // Store mapping for use in products
+                        $categoryIdMap[$category->category_id] = $newCategoryId;
                     } catch (\Exception $e) {
+                        // Optionally log the error
                     }
                 }
-                
+
                 // Save products
                 $products = StoreProduct::where('card_id', $id)->get();
+
                 foreach ($products as $product) {
                     try {
-                        // Save product
                         $duplicateStoreProduct = new StoreProduct();
                         $duplicateStoreProduct->card_id = $duplicateCard->card_id;
                         $duplicateStoreProduct->product_id = uniqid();
-                        $duplicateStoreProduct->category_id = $product->category_id;
+
+                        // Replace old category_id with new one using the map
+                        $duplicateStoreProduct->category_id = $categoryIdMap[$product->category_id] ?? null;
+
                         $duplicateStoreProduct->badge = $product->badge;
                         $duplicateStoreProduct->product_image = $product->product_image;
                         $duplicateStoreProduct->product_name = $product->product_name;
@@ -338,6 +362,22 @@ class DuplicateController extends Controller
                         $duplicateStoreProduct->product_status = $product->product_status;
                         $duplicateStoreProduct->status = 1;
                         $duplicateStoreProduct->save();
+                    } catch (\Exception $e) {
+                        // Optionally log the error
+                    }
+                }
+
+                // Store Business Hours
+                $businessHours = StoreBusinessHour::where('store_id', $id)->get();
+                foreach ($businessHours as $businessHour) {
+                    try {
+                        // Save store business hour
+                        $duplicateBusinessHour = new StoreBusinessHour();
+                        $duplicateBusinessHour->user_id = $businessHour->user_id;
+                        $duplicateBusinessHour->store_id = $duplicateCard->card_id;
+                        $duplicateBusinessHour->business_hours_id = uniqid();
+                        $duplicateBusinessHour->business_hours = $businessHour->business_hours;
+                        $duplicateBusinessHour->save();
                     } catch (\Exception $e) {
                     }
                 }

@@ -949,7 +949,7 @@
                 toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | preview save print | insertfile link anchor | ltr rtl',
                 content_style: 'body { font-family:Times New Roman,Arial,sans-serif; font-size:16px }',
                 height: 226,
-                menubar: true,
+                menubar: false,
                 statusbar: false,
 
                 // Correct mobile settings (limited fields allowed)

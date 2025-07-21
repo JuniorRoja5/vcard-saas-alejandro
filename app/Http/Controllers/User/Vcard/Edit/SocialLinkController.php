@@ -177,7 +177,7 @@ class SocialLinkController extends Controller
                                 if ($customContent && strpos($customContent, '<iframe') === false && strpos($customContent, 'maps/embed') === false) {
                                     $customContent = $customContent;
                                 }
-                            }                            
+                            }
 
                             // Save
                             $field = new BusinessField();

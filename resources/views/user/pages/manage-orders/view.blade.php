@@ -131,7 +131,7 @@
                                         </div>
                                     </div>
                                     <div class="datagrid-item mx-3 my-1 d-print-none">
-                                        <div class="datagrid-title">{{ __('Delivery Note') }}</div>
+                                        <div class="datagrid-title">{{ __('Delivery Message') }}</div>
                                         <div class="datagrid-content fw-bold">
                                             {{ json_decode($order->order_details)->delivery_message ?? '-' }}
                                         </div>

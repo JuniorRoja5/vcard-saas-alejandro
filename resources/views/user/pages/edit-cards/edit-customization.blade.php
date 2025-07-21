@@ -161,7 +161,7 @@
                                                             class="form-selectgroup-input"
                                                             {{ $custom_styles['layout'] == $layout ? 'checked' : '' }}>
                                                         <span
-                                                            class="form-selectgroup-label text-capitalize">{{ $layout }}</span>
+                                                            class="form-selectgroup-label text-capitalize">{{ __($layout) }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -181,7 +181,7 @@
                                                             class="form-selectgroup-input"
                                                             {{ $custom_styles['profile_image_style'] == $profileImageStyle ? 'checked' : '' }}>
                                                         <span
-                                                            class="form-selectgroup-label text-capitalize">{{ $profileImageStyle }}</span>
+                                                            class="form-selectgroup-label text-capitalize">{{ __($profileImageStyle) }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -256,7 +256,7 @@
                                                             class="form-selectgroup-input"
                                                             {{ $custom_styles['font_family'] == $font ? 'checked' : '' }}>
                                                         <span
-                                                            class="form-selectgroup-label text-capitalize {{ $fontClasses[$font] ?? '' }}">
+                                                            class="form-selectgroup-label text-capitalize {{ __($fontClasses[$font]) ?? '' }}">
                                                             {{ $font }}
                                                         </span>
                                                     </label>
@@ -344,7 +344,7 @@
                                                             class="form-selectgroup-input"
                                                             {{ $custom_styles['card_edge'] == $cardEdge ? 'checked' : '' }}>
                                                         <span
-                                                            class="form-selectgroup-label text-capitalize">{{ $cardEdge }}</span>
+                                                            class="form-selectgroup-label text-capitalize">{{ __($cardEdge) }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -435,7 +435,7 @@
                                                                     class="form-selectgroup-input"
                                                                     {{ $custom_styles['button_edge'] == $buttonEdge ? 'checked' : '' }}>
                                                                 <span
-                                                                    class="form-selectgroup-label text-capitalize">{{ $buttonEdge }}</span>
+                                                                    class="form-selectgroup-label text-capitalize">{{ __($buttonEdge) }}</span>
                                                             </label>
                                                         @endforeach
                                                     </div>

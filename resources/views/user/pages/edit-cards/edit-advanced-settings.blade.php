@@ -64,27 +64,42 @@
                         </div>
                     </div>
                     <div class="col-12 col-md-10 d-flex flex-column">
-                        <form action="{{ route('user.update.advanced.setting', Request::segment(3)) }}" method="post" id="myForm">
+                        <form action="{{ route('user.update.advanced.setting', Request::segment(3)) }}" method="post" id="myForm" enctype="multipart/form-data">
                             @csrf
                             <div class="card-body">
                                 <h3 class="card-title mb-4">{{ __('Advanced Settings') }}</h3>
         
                                 <div class="row">
 
-                                    {{-- Password protected --}}
-                                    @if ($plan_details->password_protected == 1)
                                     <div class="row mb-3">
-                                        <div class="col-md-3 col-xl-3">
-                                            <div class="mb-2">
-                                                <div class="form-label">{{ __('Disable Password Protection') }}
+                                        @if ($plan_details->password_protected == 1)
+                                            {{-- Password protected --}}
+                                            <div class="col-md-3 col-xl-3">
+                                                <div class="mb-2">
+                                                    <div class="form-label">{{ __('Disable Password Protection') }}
+                                                    </div>
+                                                    <label class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            onchange="displayPasswordProtected()" {{ $business_card->password == null ? 'checked' : '' }}
+                                                            name="password_protected" id="password-protected">
+                                                    </label>
                                                 </div>
-                                                <label class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox"
-                                                        onchange="displayPasswordProtected()" {{ $business_card->password == null ? 'checked' : '' }}
-                                                        name="password_protected" id="password-protected">
-                                                </label>
                                             </div>
-                                        </div>
+                                        @endif
+                                        
+                                        @if ($plan_details->advanced_settings == 1)
+                                            {{-- Enable/Disable PWA --}}
+                                            <div class="col-md-3 col-xl-3">
+                                                <div class="mb-2">
+                                                    <div class="form-label">{{ __('Enable PWA') }}
+                                                    </div>
+                                                    <label class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" {{ $business_card->is_enable_pwa == 1 ? 'checked' : '' }}
+                                                            name="is_enable_pwa">
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <div class="{{ $business_card->password == null ? 'd-none' : '' }}" id="passwordProtectedForm">
@@ -109,7 +124,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @endif
 
                                     {{-- Advanced settings --}}
                                     @if ($plan_details->advanced_settings == 1)
@@ -157,11 +171,11 @@
                                         {{-- Meta title --}}
                                         <div class="col-md-6 col-xl-12">
                                             <div class="mb-3">
-                                                <div class="form-label required">{{ __('Meta Title') }}</div>
+                                                <div class="form-label">{{ __('Meta Title') }}</div>
                                                 <div>
                                                     <input type="text" class="form-control" name="meta_title" 
                                                         value="{{ $seoConfig->meta_title ?? '' }}" 
-                                                        placeholder="{{ __('Meta Title') }}" required>
+                                                        placeholder="{{ __('Meta Title') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -169,11 +183,11 @@
                                         {{-- Meta description --}}
                                         <div class="col-md-6 col-xl-12">
                                             <div class="mb-3">
-                                                <div class="form-label required">{{ __('Meta Description') }}</div>
+                                                <div class="form-label">{{ __('Meta Description') }}</div>
                                                 <div>
                                                     <input type="text" class="form-control" name="meta_description" 
                                                         value="{{ $seoConfig->meta_description ?? '' }}" 
-                                                        placeholder="{{ __('Meta Description') }}" required>
+                                                        placeholder="{{ __('Meta Description') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -181,11 +195,11 @@
                                         {{-- Meta keywords --}}
                                         <div class="col-md-6 col-xl-12">
                                             <div class="mb-3">
-                                                <div class="form-label required">{{ __('Meta Keywords') }}</div>
+                                                <div class="form-label">{{ __('Meta Keywords') }}</div>
                                                 <div>
                                                     <input type="text" class="form-control" name="meta_keywords" 
                                                         value="{{ $seoConfig->meta_keywords ?? '' }}" 
-                                                        placeholder="{{ __('Meta Keywords') }}" required>
+                                                        placeholder="{{ __('Meta Keywords') }}">
                                                 </div>
                                             </div>
                                         </div>

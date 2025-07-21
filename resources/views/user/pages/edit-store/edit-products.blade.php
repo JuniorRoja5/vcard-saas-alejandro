@@ -182,9 +182,9 @@
                             {{-- Product badge --}}
                             <div class="col-md-4 col-xl-6">
                                 <div class='mb-3'>
-                                    <label class='form-label required'>{{ __('Product Badge') }}</label>
+                                    <label class='form-label'>{{ __('Product Badge') }}</label>
                                     <input type='text' class='form-control' id='productBadge' name="product_badge"
-                                        placeholder='{{ __(' Product Badge') }}' required>
+                                        placeholder='{{ __('Product Badge') }}'>
                                 </div>
                             </div>
                             {{-- Product Image --}}
@@ -227,11 +227,10 @@
                             {{-- Regular Price --}}
                             <div class="col-md-4 col-xl-6">
                                 <div class='mb-3'>
-                                    <label class='form-label required'>{{ __('Regular Price') }}</label>
+                                    <label class='form-label'>{{ __('Regular Price') }}</label>
                                     <input type='number' class='form-control' id="productRegularPrice"
                                         name='product_regular_price' min='1'
-                                        placeholder='{{ __('Regular Price') }}' min='1' step='.001'
-                                        required>
+                                        placeholder='{{ __('Regular Price') }}' min='1' step='.001'>
                                 </div>
                             </div>
                             {{-- Sales Price --}}
@@ -295,9 +294,9 @@
                             <div class="col-md-4 col-xl-6">
                                 <input type="hidden" id="productId">
                                 <div class='mb-3'>
-                                    <label class='form-label required'>{{ __('Product Badge') }}</label>
+                                    <label class='form-label'>{{ __('Product Badge') }}</label>
                                     <input type='text' class='form-control' id='editProductBadge'
-                                        name="product_badge" placeholder='{{ __('Product Badge') }}' required>
+                                        name="product_badge" placeholder='{{ __('Product Badge') }}'>
                                 </div>
                             </div>
                             {{-- Product Image --}}
@@ -342,11 +341,10 @@
                             {{-- Regular Price --}}
                             <div class="col-md-4 col-xl-6">
                                 <div class='mb-3'>
-                                    <label class='form-label required'>{{ __('Regular Price') }}</label>
+                                    <label class='form-label'>{{ __('Regular Price') }}</label>
                                     <input type='number' class='form-control' id="editProductRegularPrice"
                                         name='product_regular_price' min='1'
-                                        placeholder='{{ __('Regular Price') }}' min='1' step='.001'
-                                        required>
+                                        placeholder='{{ __('Regular Price') }}' min='1' step='.001'>
                                 </div>
                             </div>
                             {{-- Sales Price --}}
