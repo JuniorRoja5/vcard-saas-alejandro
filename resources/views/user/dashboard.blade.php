@@ -146,7 +146,7 @@
                                             </div>
                                             <div class="h4 h-lg-1 text-custom">
                                                 {{ $business_card == 999 ? __('Unlimited') : $business_card }}</div>
-                                            <a class="text-custom" href="{{ route('user.cards') }}">
+                                            <a class="text-custom" href="{{ route('user.cards.index') }}">
                                                 {{ __('Show details') }}
                                             </a>
                                         </div>
@@ -184,7 +184,7 @@
                                             </div>
                                             <div class="h4 h-lg-1 text-custom">
                                                 {{ $business_card == 999 ? __('Unlimited') : $business_card }}</div>
-                                            <a class="text-custom" href="{{ route('user.cards') }}">
+                                            <a class="text-custom" href="{{ route('user.cards.index') }}">
                                                 {{ __('Show details') }}
                                             </a>
                                         </div>

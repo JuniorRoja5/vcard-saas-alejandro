@@ -73,7 +73,7 @@ class ServiceController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Get plan details
             $plan = DB::table('users')->where('user_id', Auth::user()->user_id)->where('status', 1)->first();

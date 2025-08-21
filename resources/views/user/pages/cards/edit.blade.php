@@ -1,0 +1,1 @@
+<!doctype html><html><body><div class='container'><h1>Edit Card</h1><a href='{{ route("user.cards") }}'>Back</a></div></body></html>

@@ -63,7 +63,7 @@ class PopUpController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check is newsletter popup is "enabled"
             $is_newsletter_pop_active = 0;
@@ -135,7 +135,7 @@ class PopUpController extends Controller
                 // Check contact form is "ENABLED"
                 return redirect()->route('user.advanced.setting', $id)->with('success', trans('Testimonials are updated.'));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }

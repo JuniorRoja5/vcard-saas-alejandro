@@ -184,11 +184,11 @@
                                 </div>
                                 <div class="card-footer text-end">
                                     <div class="d-flex">
-                                        <a href="{{ route('user.cards') }}"
+                                        <a href="{{ route('user.cards.index') }}"
                                             class="btn btn-outline-primary ms-2">{{ __('Cancel') }}</a>
                                         {{-- Next link --}}
                                         @php
-                                            $route = route('user.cards');
+                                            $route = route('user.cards.index');
 
                                             // Check business hours is "ENABLED"
                                             if ($plan_details->business_hours == 1) {

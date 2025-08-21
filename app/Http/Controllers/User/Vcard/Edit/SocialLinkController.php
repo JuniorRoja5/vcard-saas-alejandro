@@ -46,7 +46,7 @@ class SocialLinkController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Queries
             $features = BusinessField::where('card_id', $id)->orderBy('id', 'asc')->get();
@@ -80,7 +80,7 @@ class SocialLinkController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check icon
             if ($request->icon) {

@@ -60,7 +60,7 @@ class DuplicateController extends Controller
         $type = $request->query('type');
 
         // Default route
-        $route = 'user.cards';
+        $route = 'user.cards.index';
         $message = 'vCard not found!';
 
         if ($type == 'store') {

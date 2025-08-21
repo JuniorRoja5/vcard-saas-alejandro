@@ -1,114 +1,76 @@
-@extends('user.layouts.index', ['header' => true, 'nav' => true, 'demo' => true, 'settings' => $settings])
+{{--
+    Choose-a-Card UI (Bootstrap-ready)
+    This view posts to route('user.cards.store'), which is defined in routes/user_cards.php.
+    If you already have a layout, replace the <html> wrapper with @extends and @section.
+--}}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Choose a Card</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5 page-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-{{-- Custom CSS --}}
-@section('css')
-@endsection
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Create your card</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('user.cards.store') }}">
+                        @csrf
 
-@section('content')
-    <div class="page-wrapper">
-        <!-- Page title -->
-        <div class="page-header d-print-none">
-            <div class="container-fluid">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <div class="page-pretitle">
-                            {{ __('Overview') }}
+                        <div class="mb-3">
+                            <label for="card_type" class="form-label">Card Type</label>
+                            <select id="card_type" name="card_type" class="form-select" required>
+                                <option value="" disabled selected>Pick a style...</option>
+                                @foreach(($cardTypes ?? []) as $type)
+                                    <option value="{{ $type['key'] }}">{{ $type['label'] }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                        <h2 class="page-title">
-                            {{ __('Choose a Card Type') }}
-                        </h2>
-                    </div>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title (optional)</label>
+                            <input id="title" name="title" type="text" class="form-control" placeholder="e.g., Mustafa’s Card">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Short description (optional)</label>
+                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="What makes this card special?"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Continue</button>
+                            <a href="{{ route('user.cards.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
-        <div class="page-body">
-            <div class="container-fluid">
-                {{-- Failed --}}
-                @if (Session::has('failed'))
-                    <div class="alert alert-important alert-danger alert-dismissible mb-2" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                {{ Session::get('failed') }}
-                            </div>
-                        </div>
-                        <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                    </div>
-                @endif
 
-                {{-- Success --}}
-                @if (Session::has('success'))
-                    <div class="alert alert-important alert-success alert-dismissible mb-2" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                {{ Session::get('success') }}
-                            </div>
-                        </div>
-                        <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                    </div>
-                @endif
-
-                <div class="row row-deck row-cards">
-                    {{-- Business --}}
-                    <div class="col-6 col-md-2 col-xl-2 col-lg-2">
-                        <div class="card">
-                            <label class="form-imagecheck mb-2">
-                                <input name="card-type" type="radio" value="business" class="form-imagecheck-input"
-                                    onclick="chooseCardTpe(this)">
-                                <span class="shadow-none">
-                                    <img src="{{ asset('img/vCards/business.png') }}" alt="{{ __('Business') }}"
-                                        class="form-imagecheck-image p-2">
-                                </span>
-                                <h4 class="text-center mt-4">{{ __('Business') }}</h4>
-                            </label>
-                        </div>
-                    </div>
-                    {{-- Personal --}}
-                    <div class="col-6 col-md-2 col-xl-2 col-lg-2">
-                        <div class="card">
-                            <label class="form-imagecheck mb-2">
-                                <input name="card-type" type="radio" value="personal" class="form-imagecheck-input"
-                                    onclick="chooseCardTpe(this)">
-                                <span class="shadow-none">
-                                    <img src="{{ asset('img/vCards/personal.png') }}" alt="{{ __('Personal') }}"
-                                        class="form-imagecheck-image p-2">
-                                </span>
-                                <h4 class="text-center mt-4">{{ __('Personal') }}</h4>
-                            </label>
-                        </div>
-                    </div>
-                    {{-- Custom --}}
-                    <div class="col-6 col-md-2 col-xl-2 col-lg-2">
-                        <div class="card">
-                            <label class="form-imagecheck mb-2">
-                                <input name="card-type" type="radio" value="custom" class="form-imagecheck-input"
-                                    onclick="chooseCardTpe(this)">
-                                <span class="shadow-none">
-                                    <img src="{{ asset('img/vCards/custom.png') }}" alt="{{ __('Custom') }}"
-                                        class="form-imagecheck-image p-2">
-                                </span>
-                                <h4 class="text-center mt-4">{{ __('Custom') }}</h4>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <p class="text-muted small mt-3">
+                Having trouble? Make sure <code>require base_path('routes/user_cards.php');</code> is added at the bottom of <code>routes/web.php</code>,
+                and that <code>App\Http\Controllers\User\CardController</code> exists.
+            </p>
         </div>
-        @include('user.includes.footer')
     </div>
-
-    {{-- Custom JS --}}
-    @push('custom-js')
-        <script>
-            function chooseCardTpe(selectedCard) {
-                var selectedCardValue = selectedCard.value;
-                if (selectedCardValue == "business") {
-                    window.location = `{{ route('user.create.card', 'type=business') }}`;
-                } else if (selectedCardValue == "custom") {
-                    window.location = `{{ route('user.create.card', 'type=custom') }}`;
-                } else {
-                    window.location = `{{ route('user.create.card', 'type=personal') }}`;
-                }
-            }
-        </script>
-    @endpush
-@endsection
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

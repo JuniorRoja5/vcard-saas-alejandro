@@ -78,7 +78,7 @@ class EditStorePopupsController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check is newsletter popup is "enabled"
             $is_newsletter_pop_active = 0;

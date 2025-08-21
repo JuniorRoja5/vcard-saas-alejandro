@@ -1,10 +1,25 @@
-/node_modules
-/public/hot
+# Dependencias
+/vendor/
+/node_modules/
+
+# Archivos delicados
+.env
+*.log
+
+# Uploads y storage
+/storage/app/*
+!/storage/app/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Cache Laravel
+/bootstrap/cache/*.php
 /public/storage
-/storage/*.key
-.env.backup
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
+
+# IDE
+.DS_Store
+.vscode/
+.idea/

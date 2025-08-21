@@ -114,7 +114,7 @@
                                         <div class="d-flex">
                                             {{-- Check type --}}
                                             @if ($business_card->type != 'personal')
-                                                <a href="{{ route('user.cards') }}" class="btn btn-outline-primary ms-2">
+                                                <a href="{{ route('user.cards.index') }}" class="btn btn-outline-primary ms-2">
                                                     {{ __('Cancel') }}
                                                 </a>
                                             @endif

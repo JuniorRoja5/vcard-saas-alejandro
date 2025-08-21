@@ -72,7 +72,7 @@ class SocialLinkController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check icon
             if ($request->icon != null) {
@@ -191,7 +191,7 @@ class SocialLinkController extends Controller
                         if ($plan_details->appointment == 1) {
                             return redirect()->route('user.appointment', $id)->with('success', trans('Bio links are updated.'));
                         } else {
-                            return redirect()->route('user.cards',)->with('success', trans('Your virtual business card is ready.'));
+                            return redirect()->route('user.cards.index', $id)->with('success', trans('Your virtual business card is ready.'));
                         }
                     } else {
                         return redirect()->route('user.payment.links', $id)->with('success', trans('Bio links are updated.'));

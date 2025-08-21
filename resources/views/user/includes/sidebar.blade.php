@@ -115,7 +115,7 @@
                 @if ($active_plan)
                     @if ($active_plan['plan_type'] == 'VCARD')
                         <li class="nav-item {{ request()->is('user/cards') || request()->is('user/edit-card*') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('user.cards') }}">
+                            <a class="nav-link" href="{{ route('user.cards.index') }}">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-id"
                                         width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -161,7 +161,7 @@
 
                     @if ($active_plan['plan_type'] == 'BOTH')
                         <li class="nav-item {{ request()->is('user/cards') || request()->is('user/edit-*') || request()->is('user/choose-card-type') || request()->is('user/create-card') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('user.cards') }}">
+                            <a class="nav-link" href="{{ route('user.cards.index') }}">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-id"
                                         width="24" height="24" viewBox="0 0 24 24" stroke-width="2"

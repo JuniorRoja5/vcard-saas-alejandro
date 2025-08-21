@@ -1,0 +1,6 @@
+// ---- Stage2: Mi Tienda API (normalized) ----
+Route::middleware(['auth'])->prefix('user/api/mi-tienda')->group(function(){
+    Route::get('/ping', [\App\Http\Controllers\User\MiTiendaApiController::class, 'ping'])->name('user.mitienda.ping');
+    Route::get('/state', [\App\Http\Controllers\User\MiTiendaApiController::class, 'stateGet'])->name('user.mitienda.state.get');
+    Route::post('/state', [\App\Http\Controllers\User\MiTiendaApiController::class, 'statePost'])->name('user.mitienda.state.post');
+});

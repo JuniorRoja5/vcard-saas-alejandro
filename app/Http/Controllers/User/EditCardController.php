@@ -59,7 +59,7 @@ class EditCardController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check card type
             if ($business_card->card_type == "store") {
@@ -110,7 +110,7 @@ class EditCardController extends Controller
 
             // Check card is exists
             if ($business_card == null) {
-                return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+                return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
             } else {
                 //Cover Type - Validation
                 if($request->cover_type != "none") {

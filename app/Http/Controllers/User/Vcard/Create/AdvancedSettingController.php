@@ -50,7 +50,7 @@ class AdvancedSettingController extends Controller
         if ($plan_details->advanced_settings == 1) {
             return view('user.pages.cards.advanced-settings', compact('plan_details', 'settings'));
         } else {
-            return redirect()->route('user.cards')->with('success', trans('Your virtual business card is updated!'));
+            return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is updated!'));
         }
     }
 
@@ -62,7 +62,7 @@ class AdvancedSettingController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check meta title
             $metaTitle = $request->meta_title;
@@ -123,7 +123,7 @@ class AdvancedSettingController extends Controller
                 'is_enable_pwa' => $request->is_enable_pwa,
             ]);
 
-            return redirect()->route('user.cards')->with('success', trans('Your virtual business card is updated!'));
+            return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is updated!'));
         }
     }
 }

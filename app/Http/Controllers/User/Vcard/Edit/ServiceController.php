@@ -51,7 +51,7 @@ class ServiceController extends Controller
         $business_card = BusinessCard::where('card_id', $id)->first();
 
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             if ($request->ajax()) {
                 $services = Service::where('card_id', $id)->orderBy('id', 'desc')->get();

@@ -46,7 +46,7 @@ class PaymentLinkController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Queries
             $payments = Payment::where('card_id', $id)->orderBy('position', 'asc')->get();
@@ -76,7 +76,7 @@ class PaymentLinkController extends Controller
         // Find business card
         $business_card = BusinessCard::where('card_id', $id)->first();
         if (!$business_card) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         }
 
         // If no icons are submitted or empty array, delete all existing payment links

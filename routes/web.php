@@ -169,6 +169,7 @@ use App\Http\Controllers\User\Vcard\Edit\BusinessHourController as EditBusinessH
 use App\Http\Controllers\User\Vcard\Edit\AdvancedSettingController as EditAdvancedSettingController;
 use App\Http\Controllers\User\Vcard\Edit\EditCustomizationController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -179,6 +180,35 @@ use App\Http\Controllers\User\Vcard\Edit\EditCustomizationController;
 | contains the "web" middleware group. Now create something great!
 |
  */
+// new here
+use App\Http\Controllers\User\MiTiendaApiController;
+
+
+Route::middleware(['auth'])->group(function () {
+  Route::resource('cards', \App\Http\Controllers\CardController::class);
+});
+
+
+Route::middleware(['web','auth']) // adjust as needed
+    ->name('user.')
+    ->prefix('user')
+    ->group(function () {
+        Route::post('/cards', [CardController::class, 'store'])->name('cards.store');
+    });
+
+
+    //
+    Route::middleware(['web','auth'])->prefix('user')->name('user.')->group(function () {
+    Route::resource('cards', CardController::class); // gives user.cards.store etc.
+
+    Route::post('cards/{card}/publish', [CardController::class, 'publish'])->name('cards.publish');
+    Route::post('cards/{card}/unpublish', [CardController::class, 'unpublish'])->name('cards.unpublish');
+    Route::get('cards/{card}/preview', [CardController::class, 'preview'])->name('cards.preview');
+
+    Route::get('/user/cards/choose', [\App\Http\Controllers\User\CardController::class, 'authorizeCard'])
+     ->name('user.cards.choose');
+});
+//new end here
 
 // Installer Middleware
 Route::group(['middleware' => 'Installer'], function () {
@@ -206,6 +236,9 @@ Route::group(['middleware' => 'Installer'], function () {
 
     Route::group(['middleware' => 'frame.destroyer', 'scriptsanitizer'], function () {
         Route::get('/', [HomeController::class, 'index'])->name('home-locale');
+
+        Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/home-locale-alias', [HomeController::class, 'index'])->name('home-locale');
 
         Auth::routes(['verify' => true]);
 
@@ -1079,4 +1112,56 @@ Route::group(['middleware' => 'Installer'], function () {
 
     // Read NFC Card
     Route::get('nfc/{id}', [ReadNfcCardController::class, 'readNfcCard'])->name('read.nfc.card');
+});
+
+
+
+// --- Injected by integration script: SPA frontend routes ---
+Route::view('/', 'frontend.index');
+Route::view('/{any}', 'frontend.index')->where('any', '^(?!api|admin|user|safe).*$');
+require base_path('routes/user_cards.php');
+require base_path('routes/user_cards_builder.php');
+require base_path('routes/user_mitienda_api.php');
+require base_path('routes/mitienda_safe.php');
+
+
+    // Private (dashboard) API
+use App\Http\Controllers\CardPublicController;           // Public page wrapper
+use App\Http\Controllers\MiTiendaPublicApiController;    // Public read-only API
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes — Stage 2 (Clean, No Duplicates)
+|--------------------------------------------------------------------------
+| Order matters. Define public and private routes first. Place any SPA
+| catch‑all LAST and exclude api|admin|user|v|c from it so it doesn't swallow.
+*/
+
+// ---------------------------------------------------------
+// Public card viewer (two paths for compatibility)
+Route::get('/c/{slug}', [CardPublicController::class, 'show'])->name('cards.public');
+Route::get('/v/{slug}', [CardPublicController::class, 'show'])->name('card.public'); // legacy name
+
+// Public read-only state API (new + legacy)
+Route::get('/api/mi-tienda/public/state/{slug}', [MiTiendaPublicApiController::class, 'state'])->name('mitienda.public.state');
+Route::get('/api/card/state/{slug}', [MiTiendaPublicApiController::class, 'state'])->name('mitienda.public.state.legacy');
+
+// ---------------------------------------------------------
+// User dashboard (must be behind auth)
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
+    // Cards CRUD + Builder
+    Route::prefix('cards')->name('cards.')->group(function () {
+        Route::get('/', [CardController::class, 'index'])->name('index');
+        Route::get('/create', [CardController::class, 'create'])->name('create');
+        Route::post('/', [CardController::class, 'store'])->name('store');
+        Route::get('/{card}/builder', [CardController::class, 'builder'])->name('builder')->whereNumber('card');
+    });
+
+    // Mi Tienda private API (used by builder iframe)
+    Route::prefix('api/mi-tienda')->group(function () {
+        Route::get('ping', [MiTiendaApiController::class, 'ping'])->name('mitienda.ping');
+        Route::get('state', [MiTiendaApiController::class, 'stateGet'])->name('mitienda.state.get');
+        Route::post('state', [MiTiendaApiController::class, 'statePost'])->name('mitienda.state.post');
+        Route::get('inventory', [MiTiendaApiController::class, 'inventory'])->name('mitienda.inventory');
+    });
 });

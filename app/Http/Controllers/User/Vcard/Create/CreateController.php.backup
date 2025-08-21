@@ -71,7 +71,7 @@ class CreateController extends Controller
         if ($cards < $no_cards) {
             return view('user.pages.cards.create-card', compact('themes', 'settings', 'plan_details', 'config'));
         } else {
-            return redirect()->route('user.cards')->with('failed', trans('The maximum limit has been exceeded. Please upgrade your plan.'));
+            return redirect()->route('user.cards.index')->with('failed', trans('The maximum limit has been exceeded. Please upgrade your plan.'));
         }
     }
 

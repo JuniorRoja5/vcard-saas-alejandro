@@ -240,7 +240,7 @@
             const table = $('#businessCardsTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{ route('user.cards') }}',
+            ajax: '{{ route('user.cards.index') }}',
             language: {
                 "sProcessing": `{{ __('Processing...') }}`,
                 "sLengthMenu": `{{ __('Show _MENU_ entries') }}`,

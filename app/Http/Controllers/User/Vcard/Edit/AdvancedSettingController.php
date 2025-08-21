@@ -51,12 +51,12 @@ class AdvancedSettingController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             if($plan_details->password_protected == 1 || $plan_details->advanced_settings == 1) {
                 return view('user.pages.edit-cards.edit-advanced-settings', compact('plan_details', 'business_card', 'settings'));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }
@@ -69,7 +69,7 @@ class AdvancedSettingController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Set password
             $password = $request->password;
@@ -136,7 +136,7 @@ class AdvancedSettingController extends Controller
                 'is_enable_pwa' => $request->is_enable_pwa,
             ]);
 
-            return redirect()->route('user.cards')->with('success', trans('Your virtual business card is updated!'));
+            return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is updated!'));
         }
     }
 }

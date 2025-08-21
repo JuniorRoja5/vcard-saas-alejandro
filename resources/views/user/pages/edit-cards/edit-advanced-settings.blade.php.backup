@@ -195,7 +195,7 @@
 
                             <div class="card-footer text-end">
                                 <div class="d-flex">
-                                  <a href="{{ route('user.cards') }}" class="btn btn-outline-primary ms-2">{{ __('Cancel') }}</a>
+                                  <a href="{{ route('user.cards.index') }}" class="btn btn-outline-primary ms-2">{{ __('Cancel') }}</a>
                                   <button type="submit" class="btn btn-primary ms-auto">{{ __('Submit') }}</button>
                                 </div>
                             </div>

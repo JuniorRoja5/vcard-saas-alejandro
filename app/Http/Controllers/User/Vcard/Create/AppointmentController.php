@@ -51,8 +51,8 @@ class AppointmentController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
-        } else { 
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
+        } else {
             if($plan_details->appointment == 1) {
                 return view('user.pages.cards.appointment', compact('plan_details', 'business_card', 'settings'));
             } else if($plan_details->contact_form == 1) {
@@ -60,7 +60,7 @@ class AppointmentController extends Controller
             } else if($plan_details->password_protected == 1 || $plan_details->advanced_settings == 1) {
                 return redirect()->route('user.advanced.setting', request()->segment(3));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }
@@ -77,7 +77,7 @@ class AppointmentController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
 
             // Update Enquiy Email
@@ -105,7 +105,7 @@ class AppointmentController extends Controller
 
             // Check type
             if ($business_card->type == "personal") {
-                return redirect()->route('user.cards')->with('success', trans('Appointments are updated.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Appointments are updated.'));
             } else {
                 // Page redirect
                 if ($plan_details->contact_form == 1) {
@@ -116,7 +116,7 @@ class AppointmentController extends Controller
                     return redirect()->route('user.advanced.setting', $id)->with('success', trans('Appointment details updated.'));
                 } else {
                     // Redirect to cards
-                    return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                    return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
                 }
             }
         }

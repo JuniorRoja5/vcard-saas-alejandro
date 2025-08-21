@@ -130,7 +130,7 @@
 
                             <div class="card-footer text-end">
                                 <div class="d-flex">
-                                  <a href="{{ route('user.cards') }}" class="btn btn-outline-primary ms-2">{{ __('Cancel') }}</a>
+                                  <a href="{{ route('user.cards.index') }}" class="btn btn-outline-primary ms-2">{{ __('Cancel') }}</a>
                                   <a href="{{ route('user.edit.testimonials', Request::segment(3)) }}" class="btn btn-outline-primary ms-2">
                                     {{ __('Skip') }}
                                   </a>

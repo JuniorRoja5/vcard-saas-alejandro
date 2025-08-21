@@ -68,7 +68,7 @@ class PaymentLinkController extends Controller
         // Find the business card
         $business_card = BusinessCard::where('card_id', $id)->first();
         if (!$business_card) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         }
 
         // Ensure icons are provided and are in array format

@@ -1,0 +1,421 @@
+/* =================================
+   RESPONSIVE FIXES FOR MI TIENDA
+   ================================= */
+
+/* CRITICAL MOBILE FIXES FOR CUSTOM OVERLAYS */
+@media (max-width: 768px) {
+    /* Fix the specific product-type-overlay used in this app */
+    .product-type-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        padding: 1rem !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Style the overlay header specifically */
+    .product-type-overlay .overlay-header {
+        width: 100% !important;
+        max-width: 400px !important;
+        background: white !important;
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1rem !important;
+        position: relative !important;
+        margin-top: 2rem !important;
+    }
+    
+    .product-type-overlay .overlay-header h3 {
+        font-size: 1.25rem !important;
+        margin: 0 !important;
+        text-align: center !important;
+        color: #333 !important;
+    }
+    
+    /* Style the close button */
+    .product-type-overlay .btn-close-overlay {
+        position: absolute !important;
+        top: 1rem !important;
+        right: 1rem !important;
+        background: rgba(0, 0, 0, 0.1) !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10 !important;
+    }
+    
+    /* Style the overlay content */
+    .product-type-overlay .overlay-content {
+        width: 100% !important;
+        max-width: 400px !important;
+        background: white !important;
+        border-radius: 0 0 1rem 1rem !important;
+        padding: 1rem !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Style the subtitle */
+    .product-type-overlay .overlay-subtitle {
+        text-align: center !important;
+        color: #666 !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Fix the product types grid */
+    .product-types-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+}
+
+/* CRITICAL MOBILE MODAL FIXES FOR ALL OTHER OVERLAYS */
+@media (max-width: 768px) {
+    /* Reset and fix ALL modal/overlay positioning */
+    .modal,
+    .overlay,
+    .profile-overlay,
+    [id*="modal"],
+    [id*="Modal"], 
+    [id*="overlay"]:not(.product-type-overlay),
+    [id*="Overlay"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1rem !important;
+        overflow: hidden !important;
+    }
+    
+    /* Hide modals when they should be hidden */
+    .modal[style*="display: none"],
+    .overlay[style*="display: none"],
+    .profile-overlay[style*="display: none"],
+    .product-type-overlay[style*="display: none"],
+    [id*="modal"][style*="display: none"],
+    [id*="Modal"][style*="display: none"],
+    [id*="overlay"][style*="display: none"],
+    [id*="Overlay"][style*="display: none"] {
+        display: none !important;
+    }
+    
+    /* Modal content containers */
+    .modal-dialog,
+    .modal-content,
+    .overlay-content:not(.product-type-overlay .overlay-content) {
+        width: 95% !important;
+        max-width: 95% !important;
+        max-height: 90vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        border-radius: 1rem !important;
+        position: relative !important;
+        overflow-y: auto !important;
+        transform: none !important;
+    }
+    
+    /* Fix Bootstrap modal dialog specifically */
+    .modal.show .modal-dialog {
+        transform: none !important;
+        margin: 0 !important;
+    }
+    
+    /* Headers */
+    .modal-header,
+    .overlay-header:not(.product-type-overlay .overlay-header) {
+        position: sticky !important;
+        top: 0 !important;
+        background: white !important;
+        z-index: 10 !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        padding: 1rem !important;
+        border-radius: 1rem 1rem 0 0 !important;
+    }
+    
+    /* Body content */
+    .modal-body,
+    .overlay-content:not(.product-type-overlay .overlay-content) > div:not(.overlay-header):not(.overlay-footer) {
+        padding: 1rem !important;
+        overflow-y: auto !important;
+        max-height: calc(90vh - 140px) !important;
+    }
+    
+    /* Footers */
+    .modal-footer,
+    .overlay-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: white !important;
+        border-top: 1px solid #dee2e6 !important;
+        padding: 1rem !important;
+        z-index: 10 !important;
+        border-radius: 0 0 1rem 1rem !important;
+    }
+    
+    /* Close buttons */
+    .btn-close,
+    .btn-close-overlay:not(.product-type-overlay .btn-close-overlay) {
+        position: absolute !important;
+        top: 1rem !important;
+        right: 1rem !important;
+        z-index: 11 !important;
+        background: rgba(0, 0, 0, 0.1) !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 32px !important;
+        height: 32px !important;
+    }
+}
+
+/* PRODUCT TYPE CARDS MOBILE FIX */
+@media (max-width: 768px) {
+    .product-type-card {
+        margin-bottom: 0.75rem !important;
+        padding: 1rem !important;
+        border-radius: 0.75rem !important;
+        background: white !important;
+        border: 1px solid #dee2e6 !important;
+        cursor: pointer !important;
+    }
+    
+    .product-type-card:hover {
+        background: #f8f9fa !important;
+        transform: none !important;
+    }
+    
+    .product-type-card h4 {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+        word-wrap: break-word !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .product-type-card p {
+        font-size: 0.85rem !important;
+        line-height: 1.3 !important;
+        word-wrap: break-word !important;
+        color: #666 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .product-type-icon-wrapper {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 0.75rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .product-type-icon-wrapper i {
+        font-size: 1.5rem !important;
+        color: white !important;
+    }
+}
+
+/* GENERAL MOBILE LAYOUT FIXES */
+@media (max-width: 768px) {
+    /* Fix main product list */
+    .product-item {
+        flex-direction: column !important;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .product-info {
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+    }
+    
+    .product-title {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    .product-actions {
+        margin-top: 0.75rem !important;
+        justify-content: center !important;
+    }
+    
+    /* Fix preview container */
+    .preview-container {
+        margin-top: 2rem !important;
+        width: 100% !important;
+    }
+    
+    .phone-mockup {
+        transform: scale(0.8) !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Fix iframe preview */
+    .preview-iframe, #previewIframe {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 9/16 !important;
+        border-radius: 1.5rem !important;
+        max-height: 60vh !important;
+    }
+}
+
+/* TAB NAVIGATION MOBILE FIX */
+@media (max-width: 768px) {
+    .nav-tabs {
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        margin: 0 !important;
+        padding: 0 1rem !important;
+        background: white !important;
+        position: sticky !important;
+        top: 80px !important;
+        z-index: 5 !important;
+    }
+    
+    .nav-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .nav-tabs .nav-item {
+        flex-shrink: 0 !important;
+    }
+    
+    .nav-tabs .nav-link {
+        font-size: 0.85rem !important;
+        padding: 0.75rem 1rem !important;
+        white-space: nowrap !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: white !important;
+        border-bottom: 2px solid #0d6efd !important;
+        color: #0d6efd !important;
+    }
+}
+
+/* FORM INPUTS MOBILE FIX */
+@media (max-width: 768px) {
+    .form-control, .form-select {
+        font-size: 1rem !important; /* Prevent zoom on iOS */
+        padding: 0.75rem !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    .btn {
+        font-size: 0.9rem !important;
+        padding: 0.75rem 1.5rem !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    .form-label {
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* EXTREME MOBILE FIXES */
+@media (max-width: 375px) {
+    .modal-dialog,
+    .modal-content,
+    .overlay-content {
+        width: 98% !important;
+        margin: 0.5rem !important;
+    }
+    
+    .product-type-card {
+        padding: 0.75rem !important;
+    }
+    
+    .product-type-card h4 {
+        font-size: 0.9rem !important;
+    }
+    
+    .product-type-card p {
+        font-size: 0.8rem !important;
+    }
+    
+    .nav-tabs .nav-link {
+        font-size: 0.75rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .btn {
+        font-size: 0.85rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+}
+
+/* LANDSCAPE MOBILE FIXES */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .modal-dialog,
+    .overlay-content {
+        max-height: 95vh !important;
+    }
+    
+    .modal-body,
+    .overlay-content > div:not(.overlay-header):not(.overlay-footer) {
+        max-height: calc(95vh - 120px) !important;
+    }
+}
+
+/* TABLET SPECIFIC IMPROVEMENTS */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .product-item {
+        padding: 1.25rem !important;
+    }
+    
+    .preview-container {
+        width: 100% !important;
+    }
+    
+    .phone-mockup {
+        transform: scale(0.9) !important;
+    }
+    
+    .modal-dialog,
+    .overlay-content {
+        max-width: 90% !important;
+        width: 90% !important;
+    }
+}
+
+/* ENSURE PROPER STACKING ORDER */
+.modal-backdrop {
+    z-index: 9998 !important;
+}
+
+.modal, .overlay, .profile-overlay {
+    z-index: 9999 !important;
+}

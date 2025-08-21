@@ -48,7 +48,7 @@ class ContactFormController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             if ($plan_details->contact_form == 1) {
                 return view('user.pages.edit-cards.edit-contact', compact('plan_details', 'business_card', 'settings'));
@@ -57,7 +57,7 @@ class ContactFormController extends Controller
             } else if ($plan_details->password_protected == 1 && $business_card->type == 'custom') {
                 return redirect()->route('user.edit.customization', request()->segment(3));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }
@@ -74,7 +74,7 @@ class ContactFormController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
             // Check contact form is "enabled"
             if ($request->contact_form == "on") {
@@ -95,7 +95,7 @@ class ContactFormController extends Controller
                 // Customization
                 return redirect()->route('user.edit.customization', $id)->with('success', trans('Contact form updated.'));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }

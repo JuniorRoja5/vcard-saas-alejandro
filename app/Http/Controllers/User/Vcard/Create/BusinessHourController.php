@@ -55,7 +55,7 @@ class BusinessHourController extends Controller
         } else if($plan_details->password_protected == 1 || $plan_details->advanced_settings == 1) {
             return redirect()->route('user.advanced.setting', request()->segment(3));
         } else {
-            return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+            return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
         }
     }
 
@@ -71,7 +71,7 @@ class BusinessHourController extends Controller
 
         // Check business card
         if ($business_card == null) {
-            return redirect()->route('user.cards')->with('failed', trans('Card not found!'));
+            return redirect()->route('user.cards.index')->with('failed', trans('Card not found!'));
         } else {
 
             // Delete saved business hours
@@ -166,7 +166,7 @@ class BusinessHourController extends Controller
                 // Check contact form is "ENABLED"
                 return redirect()->route('user.advanced.setting', $id)->with('success', trans('Business hours are updated.'));
             } else {
-                return redirect()->route('user.cards')->with('success', trans('Your virtual business card is ready.'));
+                return redirect()->route('user.cards.index')->with('success', trans('Your virtual business card is ready.'));
             }
         }
     }
